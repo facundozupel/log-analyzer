@@ -1,0 +1,134 @@
+.flash-message {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+.kpi-card h2 {
+    margin-bottom: 0.25rem;
+    font-size: 2rem;
+}
+
+.kpi-card p {
+    margin: 0;
+    color: var(--pico-muted-color);
+}
+
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 200px;
+    margin: 1rem 0 2rem;
+    padding: 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.bar-chart .bar {
+    flex: 1;
+    background-color: var(--pico-primary);
+    min-width: 4px;
+    position: relative;
+    cursor: default;
+}
+
+.bar-chart .bar:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+table {
+    font-size: 0.9rem;
+}
+
+.download-btn {
+    margin-bottom: 1rem;
+}
+
+.verified-badge {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.url-row:hover {
+    background-color: var(--pico-primary-focus);
+}
+
+.url-row.expanded {
+    background-color: var(--pico-primary-focus);
+    font-weight: 600;
+}
+
+.bot-detail-row td {
+    padding: 0.5rem 1rem;
+    background-color: var(--pico-card-background-color, #f9f9f9);
+}
+
+.bot-subtable {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.bot-subtable th {
+    font-size: 0.8rem;
+}
+
+.bot-filter-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.bot-filter-dropdown summary {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.bot-filter-panel {
+    position: absolute;
+    z-index: 10;
+    background: var(--pico-card-background-color, #fff);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    min-width: 220px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.bot-filter-option {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.bot-filter-option input[type="checkbox"] {
+    margin: 0;
+}

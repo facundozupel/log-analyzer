@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Upload - Log Analyzer{% endblock %}
+{% block content %}
+<h1>Upload Log Files</h1>
+<form id="upload-form" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+    <label>Select <code>.log</code> files (you can add multiple times):</label>
+    <input type="file" id="file-picker" accept=".log,.txt" multiple>
+    <small id="file-count">No files added yet.</small>
+    <div id="file-list" style="margin: 1rem 0"></div>
+    <button type="button" id="add-btn" class="outline" style="margin-bottom:1rem">+ Add selected files</button>
+    <button type="submit" id="submit-btn" disabled>Analyze</button>
+</form>
+<script>
+(function() {
+    var dt = new DataTransfer();
+    var picker = document.getElementById('file-picker');
+    var addBtn = document.getElementById('add-btn');
+    var submitBtn = document.getElementById('submit-btn');
+    var fileList = document.getElementById('file-list');
+    var fileCount = document.getElementById('file-count');
+
+    function render() {
+        fileList.innerHTML = '';
+        var names = [];
+        for (var i = 0; i < dt.files.length; i++) {
+            names.push(dt.files[i].name);
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem';
+            var span = document.createElement('span');
+            span.textContent = dt.files[i].name;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'outline secondary';
+            btn.style.cssText = 'padding:0.2rem 0.5rem;margin:0;font-size:0.8rem';
+            btn.textContent = 'Remove';
+            btn.dataset.index = i;
+            btn.addEventListener('click', function() {
+                var idx = parseInt(this.dataset.index);
+                var newDt = new DataTransfer();
+                for (var j = 0; j < dt.files.length; j++) {
+                    if (j !== idx) newDt.items.add(dt.files[j]);
+                }
+                dt = newDt;
+                render();
+            });
+            row.appendChild(span);
+            row.appendChild(btn);
+            fileList.appendChild(row);
+        }
+        fileCount.textContent = dt.files.length === 0
+            ? 'No files added yet.'
+            : dt.files.length + ' file(s) ready to analyze.';
+        submitBtn.disabled = dt.files.length === 0;
+    }
+
+    addBtn.addEventListener('click', function() {
+        var files = picker.files;
+        for (var i = 0; i < files.length; i++) {
+            var exists = false;
+            for (var j = 0; j < dt.files.length; j++) {
+                if (dt.files[j].name === files[i].name && dt.files[j].size === files[i].size) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) dt.items.add(files[i]);
+        }
+        picker.value = '';
+        render();
+    });
+
+    document.getElementById('upload-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (dt.files.length === 0) return;
+        var formData = new FormData();
+        for (var i = 0; i < dt.files.length; i++) {
+            formData.append('files', dt.files[i]);
+        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Uploading…';
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        }).then(function(response) {
+            window.location.href = response.url;
+        }).catch(function() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Analyze';
+            alert('Upload failed. Please try again.');
+        });
+    });
+})();
+</script>
+{% endblock %}

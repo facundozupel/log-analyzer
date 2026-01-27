@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}IPs - Log Analyzer{% endblock %}
+{% block content %}
+<h1>IPs Report</h1>
+<a href="{{ url_for('download_report', report='ips') }}" role="button" class="download-btn outline">Download CSV</a>
+<figure>
+<table>
+    <thead>
+        <tr><th>IP</th><th>Hits</th><th>Bot?</th><th>Bot Name</th><th>Unique URLs</th></tr>
+    </thead>
+    <tbody>
+    {% for row in data %}
+    <tr>
+        <td>{{ row.ip }}</td>
+        <td>{{ row.hits }}</td>
+        <td>{{ "Yes" if row.is_bot else "No" }}</td>
+        <td>{{ row.bot_name }}</td>
+        <td>{{ row.unique_urls }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% endblock %}
