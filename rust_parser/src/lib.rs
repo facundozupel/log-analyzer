@@ -1,18 +1,28 @@
 pub mod aggregator;
 pub mod bot_detector;
-pub mod file_reader;
 pub mod output;
 pub mod parser;
 
+#[cfg(feature = "cli")]
+pub mod file_reader;
+
+#[cfg(feature = "wasm")]
+pub mod wasm;
+
+#[cfg(feature = "cli")]
 use rayon::prelude::*;
+#[cfg(feature = "cli")]
 use std::path::Path;
 
-use aggregator::Statistics;
-use bot_detector::enrich_entry;
+pub use aggregator::Statistics;
+pub use bot_detector::enrich_entry;
+pub use parser::LogEntry;
+
+#[cfg(feature = "cli")]
 use file_reader::read_all_lines;
-use parser::LogEntry;
 
 /// Process a single log file and return statistics
+#[cfg(feature = "cli")]
 pub fn process_file(path: &Path) -> Statistics {
     let mut stats = Statistics::new();
 
@@ -34,6 +44,7 @@ pub fn process_file(path: &Path) -> Statistics {
 }
 
 /// Process a single log file in parallel (line-level parallelism)
+#[cfg(feature = "cli")]
 pub fn process_file_parallel(path: &Path) -> Statistics {
     match read_all_lines(path) {
         Ok(lines) => {
@@ -59,6 +70,7 @@ pub fn process_file_parallel(path: &Path) -> Statistics {
 }
 
 /// Process multiple log files in parallel (file-level parallelism)
+#[cfg(feature = "cli")]
 pub fn process_files(paths: &[&Path]) -> Statistics {
     paths
         .par_iter()

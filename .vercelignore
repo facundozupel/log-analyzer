@@ -1,0 +1,4 @@
+rust_parser/
+*.log
+.git/
+.vercel/

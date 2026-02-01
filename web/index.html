@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Log Analyzer</h1>
+            <p class="subtitle">High-performance log parser with bot detection</p>
+        </header>
+
+        <main>
+            <section id="upload-section" class="card">
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-zone-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p>Drag & drop log files here</p>
+                        <span class="or-text">or</span>
+                        <label class="btn btn-primary">
+                            Browse files
+                            <input type="file" id="file-input" multiple accept=".log,.txt" hidden>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="file-list" class="file-list hidden">
+                    <h3>Selected files</h3>
+                    <ul id="files"></ul>
+                    <div class="actions">
+                        <button id="clear-btn" class="btn btn-secondary">Clear</button>
+                        <button id="analyze-btn" class="btn btn-primary">Analyze</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="loading" class="card hidden">
+                <div class="loading-spinner"></div>
+                <p>Processing logs...</p>
+            </section>
+
+            <section id="results" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-value" id="total-requests">-</span>
+                        <span class="stat-label">Total Requests</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="unique-urls">-</span>
+                        <span class="stat-label">Unique URLs</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="unique-ips">-</span>
+                        <span class="stat-label">Unique IPs</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="total-bytes">-</span>
+                        <span class="stat-label">Total Bytes</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card bot">
+                        <span class="stat-value" id="bot-requests">-</span>
+                        <span class="stat-label">Bot Requests</span>
+                        <span class="stat-percentage" id="bot-percentage">-</span>
+                    </div>
+                    <div class="stat-card human">
+                        <span class="stat-value" id="human-requests">-</span>
+                        <span class="stat-label">Human Requests</span>
+                    </div>
+                    <div class="stat-card verified">
+                        <span class="stat-value" id="verified-googlebot">-</span>
+                        <span class="stat-label">Verified Googlebot</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Status Codes</h3>
+                    <div id="status-codes" class="bar-chart"></div>
+                </div>
+
+                <div class="card">
+                    <h3>HTTP Methods</h3>
+                    <div id="methods" class="bar-chart"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Bot Categories</h3>
+                    <div id="bot-categories" class="bar-chart"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Top Bots</h3>
+                    <table id="top-bots" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Bot</th>
+                                <th>Category</th>
+                                <th>Hits</th>
+                                <th>URLs</th>
+                                <th>Verified</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>Top URLs</h3>
+                    <table id="top-urls" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>URL</th>
+                                <th>Hits</th>
+                                <th>Bot</th>
+                                <th>Human</th>
+                                <th>Bytes</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>Domains</h3>
+                    <div id="domains" class="bar-chart"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Servers</h3>
+                    <div id="servers" class="bar-chart"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Traffic by Date</h3>
+                    <div id="traffic-date" class="bar-chart"></div>
+                </div>
+
+                <div class="card collapsible">
+                    <h3>Raw JSON <button class="toggle-btn">Show</button></h3>
+                    <pre id="raw-json" class="hidden"></pre>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Powered by Rust + WebAssembly</p>
+        </footer>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

@@ -12,3 +12,5 @@ rust_parser/target/
 .idea/
 .vscode/
 *.swp
+.vercel
+.env*.local
