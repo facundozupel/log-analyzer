@@ -47,103 +47,347 @@
             </section>
 
             <section id="results" class="hidden">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <span class="stat-value" id="total-requests">-</span>
-                        <span class="stat-label">Total Requests</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value" id="unique-urls">-</span>
-                        <span class="stat-label">Unique URLs</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value" id="unique-ips">-</span>
-                        <span class="stat-label">Unique IPs</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value" id="total-bytes">-</span>
-                        <span class="stat-label">Total Bytes</span>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card bot">
-                        <span class="stat-value" id="bot-requests">-</span>
-                        <span class="stat-label">Bot Requests</span>
-                        <span class="stat-percentage" id="bot-percentage">-</span>
-                    </div>
-                    <div class="stat-card human">
-                        <span class="stat-value" id="human-requests">-</span>
-                        <span class="stat-label">Human Requests</span>
-                    </div>
-                    <div class="stat-card verified">
-                        <span class="stat-value" id="verified-googlebot">-</span>
-                        <span class="stat-label">Verified Googlebot</span>
+                <!-- Global Filters -->
+                <div class="global-filters card">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label>Date Range</label>
+                            <div class="date-range">
+                                <input type="date" id="filter-date-start" class="filter-input">
+                                <span>to</span>
+                                <input type="date" id="filter-date-end" class="filter-input">
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label>Domain</label>
+                            <select id="filter-domain" class="filter-select">
+                                <option value="">All Domains</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Server</label>
+                            <select id="filter-server" class="filter-select">
+                                <option value="">All Servers</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button id="apply-filters-btn" class="btn btn-primary btn-sm">Apply Filters</button>
+                            <button id="reset-filters-btn" class="btn btn-secondary btn-sm">Reset</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <h3>Status Codes</h3>
-                    <div id="status-codes" class="bar-chart"></div>
+                <!-- Tab Navigation -->
+                <nav class="tabs-nav">
+                    <button class="tab-btn active" data-tab="overview">Overview</button>
+                    <button class="tab-btn" data-tab="google-bots">Google Bots</button>
+                    <button class="tab-btn" data-tab="ai-bots">AI Bots</button>
+                    <button class="tab-btn" data-tab="all-bots">All Bots</button>
+                    <button class="tab-btn" data-tab="urls">URLs</button>
+                    <button class="tab-btn" data-tab="status-codes">Status Codes</button>
+                </nav>
+
+                <!-- Overview Tab -->
+                <div id="tab-overview" class="tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value" id="total-requests">-</span>
+                            <span class="stat-label">Total Requests</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="unique-urls">-</span>
+                            <span class="stat-label">Unique URLs</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="unique-ips">-</span>
+                            <span class="stat-label">Unique IPs</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="total-bytes">-</span>
+                            <span class="stat-label">Total Bytes</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card bot">
+                            <span class="stat-value" id="bot-requests">-</span>
+                            <span class="stat-label">Bot Requests</span>
+                            <span class="stat-percentage" id="bot-percentage">-</span>
+                        </div>
+                        <div class="stat-card human">
+                            <span class="stat-value" id="human-requests">-</span>
+                            <span class="stat-label">Human Requests</span>
+                        </div>
+                        <div class="stat-card verified">
+                            <span class="stat-value" id="verified-googlebot">-</span>
+                            <span class="stat-label">Verified Googlebot</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Status Codes</h3>
+                        <div id="status-codes" class="bar-chart"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>HTTP Methods</h3>
+                        <div id="methods" class="bar-chart"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Bot Categories</h3>
+                        <div id="bot-categories" class="bar-chart"></div>
+                    </div>
+
+                    <div class="two-col-grid">
+                        <div class="card">
+                            <h3>Domains</h3>
+                            <div id="domains" class="bar-chart"></div>
+                        </div>
+                        <div class="card">
+                            <h3>Servers</h3>
+                            <div id="servers" class="bar-chart"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Traffic by Date</h3>
+                        <div id="traffic-date" class="bar-chart"></div>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <h3>HTTP Methods</h3>
-                    <div id="methods" class="bar-chart"></div>
+                <!-- Google Bots Tab -->
+                <div id="tab-google-bots" class="tab-content">
+                    <div class="stats-grid">
+                        <div class="stat-card google">
+                            <span class="stat-value" id="google-total-hits">-</span>
+                            <span class="stat-label">Google Bot Hits</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="google-unique-urls">-</span>
+                            <span class="stat-label">URLs Crawled</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="google-avg-bytes">-</span>
+                            <span class="stat-label">Avg Response Size</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="google-error-rate">-</span>
+                            <span class="stat-label">Error Rate (4xx/5xx)</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Google Bot Types</h3>
+                        <div id="google-bot-types" class="bar-chart"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-header">
+                            <h3>URLs Crawled by Google</h3>
+                            <div class="table-controls">
+                                <input type="text" id="google-url-search" class="search-input" placeholder="Search URLs...">
+                                <select id="google-bot-filter" class="filter-select">
+                                    <option value="">All Google Bots</option>
+                                </select>
+                                <button id="google-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="google-urls-table" class="data-table sortable">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="url">URL</th>
+                                        <th data-sort="hits" class="num">Hits</th>
+                                        <th data-sort="avgBytes" class="num">Avg Bytes</th>
+                                        <th data-sort="status">Status Codes</th>
+                                        <th data-sort="lastSeen">Last Seen</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="table-pagination">
+                            <span id="google-table-info"></span>
+                            <div class="pagination-controls">
+                                <button id="google-prev-btn" class="btn btn-secondary btn-sm">Prev</button>
+                                <button id="google-next-btn" class="btn btn-secondary btn-sm">Next</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <h3>Bot Categories</h3>
-                    <div id="bot-categories" class="bar-chart"></div>
+                <!-- AI Bots Tab -->
+                <div id="tab-ai-bots" class="tab-content">
+                    <div class="stats-grid">
+                        <div class="stat-card ai">
+                            <span class="stat-value" id="ai-total-hits">-</span>
+                            <span class="stat-label">AI Bot Hits</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="ai-unique-urls">-</span>
+                            <span class="stat-label">URLs Crawled</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="ai-avg-bytes">-</span>
+                            <span class="stat-label">Avg Response Size</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="ai-bot-count">-</span>
+                            <span class="stat-label">Different AI Bots</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>AI Bot Types</h3>
+                        <div id="ai-bot-types" class="bar-chart"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-header">
+                            <h3>URLs Crawled by AI Bots</h3>
+                            <div class="table-controls">
+                                <input type="text" id="ai-url-search" class="search-input" placeholder="Search URLs...">
+                                <select id="ai-bot-filter" class="filter-select">
+                                    <option value="">All AI Bots</option>
+                                </select>
+                                <button id="ai-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="ai-urls-table" class="data-table sortable">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="url">URL</th>
+                                        <th data-sort="hits" class="num">Hits</th>
+                                        <th data-sort="avgBytes" class="num">Avg Bytes</th>
+                                        <th data-sort="status">Status Codes</th>
+                                        <th data-sort="bots">Bots</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="table-pagination">
+                            <span id="ai-table-info"></span>
+                            <div class="pagination-controls">
+                                <button id="ai-prev-btn" class="btn btn-secondary btn-sm">Prev</button>
+                                <button id="ai-next-btn" class="btn btn-secondary btn-sm">Next</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <h3>Top Bots</h3>
-                    <table id="top-bots" class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Bot</th>
-                                <th>Category</th>
-                                <th>Hits</th>
-                                <th>URLs</th>
-                                <th>Verified</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <!-- All Bots Tab -->
+                <div id="tab-all-bots" class="tab-content">
+                    <div class="card">
+                        <div class="table-header">
+                            <h3>All Bots</h3>
+                            <button id="bots-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
+                        </div>
+                        <table id="top-bots" class="data-table sortable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="name">Bot</th>
+                                    <th data-sort="category">Category</th>
+                                    <th data-sort="hits" class="num">Hits</th>
+                                    <th data-sort="urls" class="num">URLs</th>
+                                    <th data-sort="avgBytes" class="num">Avg Bytes</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <h3>Top URLs</h3>
-                    <table id="top-urls" class="data-table">
-                        <thead>
-                            <tr>
-                                <th>URL</th>
-                                <th>Hits</th>
-                                <th>Bot</th>
-                                <th>Human</th>
-                                <th>Bytes</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <!-- URLs Tab -->
+                <div id="tab-urls" class="tab-content">
+                    <div class="card">
+                        <div class="table-header">
+                            <h3>All URLs</h3>
+                            <div class="table-controls">
+                                <input type="text" id="urls-search" class="search-input" placeholder="Search URLs...">
+                                <button id="urls-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="top-urls" class="data-table sortable">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="url">URL</th>
+                                        <th data-sort="hits" class="num">Hits</th>
+                                        <th data-sort="botHits" class="num">Bot</th>
+                                        <th data-sort="humanHits" class="num">Human</th>
+                                        <th data-sort="avgBytes" class="num">Avg Bytes</th>
+                                        <th data-sort="status">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="table-pagination">
+                            <span id="urls-table-info"></span>
+                            <div class="pagination-controls">
+                                <button id="urls-prev-btn" class="btn btn-secondary btn-sm">Prev</button>
+                                <button id="urls-next-btn" class="btn btn-secondary btn-sm">Next</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <h3>Domains</h3>
-                    <div id="domains" class="bar-chart"></div>
+                <!-- Status Codes Tab -->
+                <div id="tab-status-codes" class="tab-content">
+                    <div class="stats-grid four-col">
+                        <div class="stat-card success">
+                            <span class="stat-value" id="status-2xx">-</span>
+                            <span class="stat-label">2xx Success</span>
+                        </div>
+                        <div class="stat-card redirect">
+                            <span class="stat-value" id="status-3xx">-</span>
+                            <span class="stat-label">3xx Redirect</span>
+                        </div>
+                        <div class="stat-card client-error">
+                            <span class="stat-value" id="status-4xx">-</span>
+                            <span class="stat-label">4xx Client Error</span>
+                        </div>
+                        <div class="stat-card server-error">
+                            <span class="stat-value" id="status-5xx">-</span>
+                            <span class="stat-label">5xx Server Error</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Status Code Distribution</h3>
+                        <div id="status-codes-detail" class="bar-chart"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-header">
+                            <h3>URLs by Status Code</h3>
+                            <div class="table-controls">
+                                <select id="status-filter" class="filter-select">
+                                    <option value="">All Status Codes</option>
+                                </select>
+                                <button id="status-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="status-urls-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>URL</th>
+                                        <th class="num">Hits</th>
+                                        <th>Status Codes</th>
+                                        <th>Inconsistent</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <h3>Servers</h3>
-                    <div id="servers" class="bar-chart"></div>
-                </div>
-
-                <div class="card">
-                    <h3>Traffic by Date</h3>
-                    <div id="traffic-date" class="bar-chart"></div>
-                </div>
-
+                <!-- JSON Export -->
                 <div class="card collapsible">
                     <h3>Raw JSON <button class="toggle-btn">Show</button></h3>
                     <pre id="raw-json" class="hidden"></pre>
@@ -152,7 +396,7 @@
         </main>
 
         <footer>
-            <p>Powered by Rust + WebAssembly</p>
+            <p>Powered by JavaScript</p>
         </footer>
     </div>
 

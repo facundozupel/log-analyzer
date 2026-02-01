@@ -3,16 +3,19 @@
 
 // Bot patterns (same as Rust version)
 const BOT_PATTERNS = [
-    // Search Engines
-    { pattern: /Googlebot/i, name: 'Googlebot', category: 'Search Engine' },
-    { pattern: /Googlebot-Image/i, name: 'Googlebot-Image', category: 'Search Engine' },
-    { pattern: /Googlebot-Video/i, name: 'Googlebot-Video', category: 'Search Engine' },
-    { pattern: /Googlebot-News/i, name: 'Googlebot-News', category: 'Search Engine' },
-    { pattern: /Storebot-Google/i, name: 'Storebot-Google', category: 'Search Engine' },
-    { pattern: /Google-InspectionTool/i, name: 'Google-InspectionTool', category: 'Search Engine' },
-    { pattern: /GoogleOther/i, name: 'GoogleOther', category: 'Search Engine' },
-    { pattern: /AdsBot-Google/i, name: 'AdsBot-Google', category: 'Advertising' },
-    { pattern: /Mediapartners-Google/i, name: 'Mediapartners-Google', category: 'Advertising' },
+    // Search Engines - Google
+    { pattern: /Googlebot/i, name: 'Googlebot', category: 'Search Engine', isGoogle: true },
+    { pattern: /Googlebot-Image/i, name: 'Googlebot-Image', category: 'Search Engine', isGoogle: true },
+    { pattern: /Googlebot-Video/i, name: 'Googlebot-Video', category: 'Search Engine', isGoogle: true },
+    { pattern: /Googlebot-News/i, name: 'Googlebot-News', category: 'Search Engine', isGoogle: true },
+    { pattern: /Storebot-Google/i, name: 'Storebot-Google', category: 'Search Engine', isGoogle: true },
+    { pattern: /Google-InspectionTool/i, name: 'Google-InspectionTool', category: 'Search Engine', isGoogle: true },
+    { pattern: /GoogleOther/i, name: 'GoogleOther', category: 'Search Engine', isGoogle: true },
+    { pattern: /AdsBot-Google/i, name: 'AdsBot-Google', category: 'Advertising', isGoogle: true },
+    { pattern: /Mediapartners-Google/i, name: 'Mediapartners-Google', category: 'Advertising', isGoogle: true },
+    { pattern: /Google-Extended/i, name: 'Google-Extended', category: 'LLM Bot', isGoogle: true },
+
+    // Other Search Engines
     { pattern: /bingbot/i, name: 'Bingbot', category: 'Search Engine' },
     { pattern: /Slurp/i, name: 'Yahoo Slurp', category: 'Search Engine' },
     { pattern: /DuckDuckBot/i, name: 'DuckDuckBot', category: 'Search Engine' },
@@ -20,21 +23,20 @@ const BOT_PATTERNS = [
     { pattern: /YandexBot/i, name: 'YandexBot', category: 'Search Engine' },
 
     // LLM/AI Bots
-    { pattern: /GPTBot/i, name: 'GPTBot', category: 'LLM Bot' },
-    { pattern: /ChatGPT-User/i, name: 'ChatGPT-User', category: 'LLM Bot' },
-    { pattern: /OAI-SearchBot/i, name: 'OAI-SearchBot', category: 'LLM Bot' },
-    { pattern: /Claude-Web/i, name: 'Claude-Web', category: 'LLM Bot' },
-    { pattern: /ClaudeBot/i, name: 'ClaudeBot', category: 'LLM Bot' },
-    { pattern: /anthropic-ai/i, name: 'Anthropic', category: 'LLM Bot' },
-    { pattern: /Applebot-Extended/i, name: 'Applebot-Extended', category: 'LLM Bot' },
-    { pattern: /Bytespider/i, name: 'Bytespider', category: 'LLM Bot' },
-    { pattern: /CCBot/i, name: 'CCBot', category: 'LLM Bot' },
-    { pattern: /cohere-ai/i, name: 'Cohere', category: 'LLM Bot' },
-    { pattern: /Diffbot/i, name: 'Diffbot', category: 'LLM Bot' },
-    { pattern: /FacebookBot/i, name: 'FacebookBot', category: 'LLM Bot' },
-    { pattern: /Google-Extended/i, name: 'Google-Extended', category: 'LLM Bot' },
-    { pattern: /omgili/i, name: 'Omgili', category: 'LLM Bot' },
-    { pattern: /PerplexityBot/i, name: 'PerplexityBot', category: 'LLM Bot' },
+    { pattern: /GPTBot/i, name: 'GPTBot', category: 'LLM Bot', isAI: true },
+    { pattern: /ChatGPT-User/i, name: 'ChatGPT-User', category: 'LLM Bot', isAI: true },
+    { pattern: /OAI-SearchBot/i, name: 'OAI-SearchBot', category: 'LLM Bot', isAI: true },
+    { pattern: /Claude-Web/i, name: 'Claude-Web', category: 'LLM Bot', isAI: true },
+    { pattern: /ClaudeBot/i, name: 'ClaudeBot', category: 'LLM Bot', isAI: true },
+    { pattern: /anthropic-ai/i, name: 'Anthropic', category: 'LLM Bot', isAI: true },
+    { pattern: /Applebot-Extended/i, name: 'Applebot-Extended', category: 'LLM Bot', isAI: true },
+    { pattern: /Bytespider/i, name: 'Bytespider', category: 'LLM Bot', isAI: true },
+    { pattern: /CCBot/i, name: 'CCBot', category: 'LLM Bot', isAI: true },
+    { pattern: /cohere-ai/i, name: 'Cohere', category: 'LLM Bot', isAI: true },
+    { pattern: /Diffbot/i, name: 'Diffbot', category: 'LLM Bot', isAI: true },
+    { pattern: /FacebookBot/i, name: 'FacebookBot', category: 'LLM Bot', isAI: true },
+    { pattern: /omgili/i, name: 'Omgili', category: 'LLM Bot', isAI: true },
+    { pattern: /PerplexityBot/i, name: 'PerplexityBot', category: 'LLM Bot', isAI: true },
 
     // SEO Tools
     { pattern: /AhrefsBot/i, name: 'AhrefsBot', category: 'SEO Tool' },
@@ -64,8 +66,7 @@ const BOT_PATTERNS = [
     { pattern: /spider/i, name: 'Unknown Spider', category: 'Other' },
 ];
 
-// Log line regex - matches the format:
-// [server]:::[domain]:::ip1,ip2 - - [dd/Mon/yyyy:HH:MM:SS +0000] "METHOD /path HTTP/1.1" status bytes "referer" "user-agent" "extra"
+// Log line regex
 const LOG_REGEX = /^\[([^\]]*)\]:::\[([^\]]*)\]:::([^\s]+)\s+-\s+-\s+\[([^\]]+)\]\s+"(\w+)\s+([^\s]+)\s+[^"]*"\s+(\d+)\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/;
 
 function parseLogLine(line) {
@@ -88,6 +89,8 @@ function parseLogLine(line) {
         isBot: false,
         botName: '',
         botCategory: '',
+        isGoogle: false,
+        isAI: false,
     };
 }
 
@@ -97,12 +100,14 @@ function detectBot(entry) {
             entry.isBot = true;
             entry.botName = bot.name;
             entry.botCategory = bot.category;
+            entry.isGoogle = bot.isGoogle || false;
+            entry.isAI = bot.isAI || false;
             return;
         }
     }
 }
 
-function parseLogs(content) {
+function parseLogs(content, collectEntries = false) {
     const stats = {
         totalRequests: 0,
         totalBytes: 0,
@@ -120,8 +125,13 @@ function parseLogs(content) {
         hitsByMethod: {},
         hitsByDomain: {},
         hitsByServer: {},
+        // New: Detailed bot-URL tracking
+        googleBotUrls: {},  // { url: { hits, totalBytes, statusCodes: {}, firstSeen, lastSeen, bots: Set } }
+        aiBotUrls: {},      // Same structure
+        urlStatusCodes: {}, // { url: { hits, statusCodes: {}, bots: Set, isBot } }
     };
 
+    const entries = [];
     const lines = content.split('\n');
 
     for (const line of lines) {
@@ -131,6 +141,10 @@ function parseLogs(content) {
         if (!entry) continue;
 
         detectBot(entry);
+
+        if (collectEntries) {
+            entries.push(entry);
+        }
 
         stats.totalRequests++;
         stats.totalBytes += entry.bytesSent;
@@ -146,16 +160,62 @@ function parseLogs(content) {
         // Status codes
         stats.statusDistribution[entry.statusCode] = (stats.statusDistribution[entry.statusCode] || 0) + 1;
 
-        // URL stats
-        if (!stats.hitsByUrl[entry.url]) {
-            stats.hitsByUrl[entry.url] = { hits: 0, botHits: 0, humanHits: 0, bytesTotal: 0 };
+        // Parse date for tracking
+        let dateStr = '';
+        const dateMatch = entry.datetime.match(/(\d{2})\/(\w{3})\/(\d{4}):(\d{2})/);
+        if (dateMatch) {
+            const [, day, month, year, hour] = dateMatch;
+            const monthNum = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+                              Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' }[month] || '01';
+            dateStr = `${year}-${monthNum}-${day}`;
+            const hourKey = `${dateStr} ${hour}:00`;
+            stats.hitsByDate[dateStr] = (stats.hitsByDate[dateStr] || 0) + 1;
+            stats.hitsByHour[hourKey] = (stats.hitsByHour[hourKey] || 0) + 1;
         }
-        stats.hitsByUrl[entry.url].hits++;
-        stats.hitsByUrl[entry.url].bytesTotal += entry.bytesSent;
+
+        // URL stats (enhanced)
+        if (!stats.hitsByUrl[entry.url]) {
+            stats.hitsByUrl[entry.url] = {
+                hits: 0,
+                botHits: 0,
+                humanHits: 0,
+                bytesTotal: 0,
+                statusCodes: {},
+                firstSeen: dateStr,
+                lastSeen: dateStr,
+            };
+        }
+        const urlStats = stats.hitsByUrl[entry.url];
+        urlStats.hits++;
+        urlStats.bytesTotal += entry.bytesSent;
+        urlStats.statusCodes[entry.statusCode] = (urlStats.statusCodes[entry.statusCode] || 0) + 1;
+        if (dateStr && dateStr > urlStats.lastSeen) urlStats.lastSeen = dateStr;
+        if (dateStr && dateStr < urlStats.firstSeen) urlStats.firstSeen = dateStr;
+
         if (entry.isBot) {
-            stats.hitsByUrl[entry.url].botHits++;
+            urlStats.botHits++;
         } else {
-            stats.hitsByUrl[entry.url].humanHits++;
+            urlStats.humanHits++;
+        }
+
+        // URL status codes tracking
+        if (!stats.urlStatusCodes[entry.url]) {
+            stats.urlStatusCodes[entry.url] = {
+                hits: 0,
+                statusCodes: {},
+                bots: new Set(),
+                botHits: 0,
+                humanHits: 0,
+            };
+        }
+        stats.urlStatusCodes[entry.url].hits++;
+        stats.urlStatusCodes[entry.url].statusCodes[entry.statusCode] =
+            (stats.urlStatusCodes[entry.url].statusCodes[entry.statusCode] || 0) + 1;
+        if (entry.isBot) {
+            stats.urlStatusCodes[entry.url].bots.add(entry.botName);
+            stats.urlStatusCodes[entry.url].botHits++;
+        } else {
+            stats.urlStatusCodes[entry.url].humanHits++;
         }
 
         // Bot stats
@@ -165,13 +225,59 @@ function parseLogs(content) {
                     hits: 0,
                     category: entry.botCategory,
                     uniqueUrls: new Set(),
+                    totalBytes: 0,
+                    isGoogle: entry.isGoogle,
+                    isAI: entry.isAI,
                 };
             }
             stats.hitsByBot[entry.botName].hits++;
             stats.hitsByBot[entry.botName].uniqueUrls.add(entry.url);
+            stats.hitsByBot[entry.botName].totalBytes += entry.bytesSent;
 
             // Category stats
             stats.hitsByCategory[entry.botCategory] = (stats.hitsByCategory[entry.botCategory] || 0) + 1;
+
+            // Google bot URL tracking
+            if (entry.isGoogle) {
+                if (!stats.googleBotUrls[entry.url]) {
+                    stats.googleBotUrls[entry.url] = {
+                        hits: 0,
+                        totalBytes: 0,
+                        statusCodes: {},
+                        firstSeen: dateStr,
+                        lastSeen: dateStr,
+                        bots: new Set(),
+                    };
+                }
+                const gUrl = stats.googleBotUrls[entry.url];
+                gUrl.hits++;
+                gUrl.totalBytes += entry.bytesSent;
+                gUrl.statusCodes[entry.statusCode] = (gUrl.statusCodes[entry.statusCode] || 0) + 1;
+                gUrl.bots.add(entry.botName);
+                if (dateStr && dateStr > gUrl.lastSeen) gUrl.lastSeen = dateStr;
+                if (dateStr && dateStr < gUrl.firstSeen) gUrl.firstSeen = dateStr;
+            }
+
+            // AI bot URL tracking
+            if (entry.isAI) {
+                if (!stats.aiBotUrls[entry.url]) {
+                    stats.aiBotUrls[entry.url] = {
+                        hits: 0,
+                        totalBytes: 0,
+                        statusCodes: {},
+                        firstSeen: dateStr,
+                        lastSeen: dateStr,
+                        bots: new Set(),
+                    };
+                }
+                const aiUrl = stats.aiBotUrls[entry.url];
+                aiUrl.hits++;
+                aiUrl.totalBytes += entry.bytesSent;
+                aiUrl.statusCodes[entry.statusCode] = (aiUrl.statusCodes[entry.statusCode] || 0) + 1;
+                aiUrl.bots.add(entry.botName);
+                if (dateStr && dateStr > aiUrl.lastSeen) aiUrl.lastSeen = dateStr;
+                if (dateStr && dateStr < aiUrl.firstSeen) aiUrl.firstSeen = dateStr;
+            }
         }
 
         // Method stats
@@ -182,20 +288,11 @@ function parseLogs(content) {
 
         // Server stats
         stats.hitsByServer[entry.server] = (stats.hitsByServer[entry.server] || 0) + 1;
-
-        // Date/time stats
-        const dateMatch = entry.datetime.match(/(\d{2})\/(\w{3})\/(\d{4}):(\d{2})/);
-        if (dateMatch) {
-            const [, day, month, year, hour] = dateMatch;
-            const monthNum = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
-                              Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' }[month] || '01';
-            const dateKey = `${year}-${monthNum}-${day}`;
-            const hourKey = `${dateKey} ${hour}:00`;
-            stats.hitsByDate[dateKey] = (stats.hitsByDate[dateKey] || 0) + 1;
-            stats.hitsByHour[hourKey] = (stats.hitsByHour[hourKey] || 0) + 1;
-        }
     }
 
+    if (collectEntries) {
+        return { stats, entries };
+    }
     return stats;
 }
 
@@ -209,14 +306,17 @@ function mergeStats(stats1, stats2) {
         humanRequests: stats1.humanRequests + stats2.humanRequests,
         verifiedGooglebotRequests: stats1.verifiedGooglebotRequests + stats2.verifiedGooglebotRequests,
         statusDistribution: { ...stats1.statusDistribution },
-        hitsByUrl: { ...stats1.hitsByUrl },
-        hitsByBot: { ...stats1.hitsByBot },
+        hitsByUrl: {},
+        hitsByBot: {},
         hitsByCategory: { ...stats1.hitsByCategory },
         hitsByHour: { ...stats1.hitsByHour },
         hitsByDate: { ...stats1.hitsByDate },
         hitsByMethod: { ...stats1.hitsByMethod },
         hitsByDomain: { ...stats1.hitsByDomain },
         hitsByServer: { ...stats1.hitsByServer },
+        googleBotUrls: {},
+        aiBotUrls: {},
+        urlStatusCodes: {},
     };
 
     // Merge status distribution
@@ -225,23 +325,97 @@ function mergeStats(stats1, stats2) {
     }
 
     // Merge URL stats
-    for (const [url, urlStats] of Object.entries(stats2.hitsByUrl)) {
-        if (!merged.hitsByUrl[url]) {
-            merged.hitsByUrl[url] = { hits: 0, botHits: 0, humanHits: 0, bytesTotal: 0 };
+    for (const stats of [stats1, stats2]) {
+        for (const [url, urlStats] of Object.entries(stats.hitsByUrl)) {
+            if (!merged.hitsByUrl[url]) {
+                merged.hitsByUrl[url] = {
+                    hits: 0, botHits: 0, humanHits: 0, bytesTotal: 0,
+                    statusCodes: {}, firstSeen: urlStats.firstSeen, lastSeen: urlStats.lastSeen
+                };
+            }
+            merged.hitsByUrl[url].hits += urlStats.hits;
+            merged.hitsByUrl[url].botHits += urlStats.botHits;
+            merged.hitsByUrl[url].humanHits += urlStats.humanHits;
+            merged.hitsByUrl[url].bytesTotal += urlStats.bytesTotal;
+            for (const [code, count] of Object.entries(urlStats.statusCodes || {})) {
+                merged.hitsByUrl[url].statusCodes[code] = (merged.hitsByUrl[url].statusCodes[code] || 0) + count;
+            }
+            if (urlStats.lastSeen > merged.hitsByUrl[url].lastSeen) merged.hitsByUrl[url].lastSeen = urlStats.lastSeen;
+            if (urlStats.firstSeen < merged.hitsByUrl[url].firstSeen) merged.hitsByUrl[url].firstSeen = urlStats.firstSeen;
         }
-        merged.hitsByUrl[url].hits += urlStats.hits;
-        merged.hitsByUrl[url].botHits += urlStats.botHits;
-        merged.hitsByUrl[url].humanHits += urlStats.humanHits;
-        merged.hitsByUrl[url].bytesTotal += urlStats.bytesTotal;
     }
 
     // Merge bot stats
-    for (const [bot, botStats] of Object.entries(stats2.hitsByBot)) {
-        if (!merged.hitsByBot[bot]) {
-            merged.hitsByBot[bot] = { hits: 0, category: botStats.category, uniqueUrls: new Set() };
+    for (const stats of [stats1, stats2]) {
+        for (const [bot, botStats] of Object.entries(stats.hitsByBot)) {
+            if (!merged.hitsByBot[bot]) {
+                merged.hitsByBot[bot] = {
+                    hits: 0, category: botStats.category, uniqueUrls: new Set(),
+                    totalBytes: 0, isGoogle: botStats.isGoogle, isAI: botStats.isAI
+                };
+            }
+            merged.hitsByBot[bot].hits += botStats.hits;
+            merged.hitsByBot[bot].totalBytes += botStats.totalBytes;
+            botStats.uniqueUrls.forEach(url => merged.hitsByBot[bot].uniqueUrls.add(url));
         }
-        merged.hitsByBot[bot].hits += botStats.hits;
-        botStats.uniqueUrls.forEach(url => merged.hitsByBot[bot].uniqueUrls.add(url));
+    }
+
+    // Merge Google bot URLs
+    for (const stats of [stats1, stats2]) {
+        for (const [url, urlStats] of Object.entries(stats.googleBotUrls)) {
+            if (!merged.googleBotUrls[url]) {
+                merged.googleBotUrls[url] = {
+                    hits: 0, totalBytes: 0, statusCodes: {},
+                    firstSeen: urlStats.firstSeen, lastSeen: urlStats.lastSeen, bots: new Set()
+                };
+            }
+            merged.googleBotUrls[url].hits += urlStats.hits;
+            merged.googleBotUrls[url].totalBytes += urlStats.totalBytes;
+            for (const [code, count] of Object.entries(urlStats.statusCodes)) {
+                merged.googleBotUrls[url].statusCodes[code] = (merged.googleBotUrls[url].statusCodes[code] || 0) + count;
+            }
+            urlStats.bots.forEach(bot => merged.googleBotUrls[url].bots.add(bot));
+            if (urlStats.lastSeen > merged.googleBotUrls[url].lastSeen) merged.googleBotUrls[url].lastSeen = urlStats.lastSeen;
+            if (urlStats.firstSeen < merged.googleBotUrls[url].firstSeen) merged.googleBotUrls[url].firstSeen = urlStats.firstSeen;
+        }
+    }
+
+    // Merge AI bot URLs
+    for (const stats of [stats1, stats2]) {
+        for (const [url, urlStats] of Object.entries(stats.aiBotUrls)) {
+            if (!merged.aiBotUrls[url]) {
+                merged.aiBotUrls[url] = {
+                    hits: 0, totalBytes: 0, statusCodes: {},
+                    firstSeen: urlStats.firstSeen, lastSeen: urlStats.lastSeen, bots: new Set()
+                };
+            }
+            merged.aiBotUrls[url].hits += urlStats.hits;
+            merged.aiBotUrls[url].totalBytes += urlStats.totalBytes;
+            for (const [code, count] of Object.entries(urlStats.statusCodes)) {
+                merged.aiBotUrls[url].statusCodes[code] = (merged.aiBotUrls[url].statusCodes[code] || 0) + count;
+            }
+            urlStats.bots.forEach(bot => merged.aiBotUrls[url].bots.add(bot));
+            if (urlStats.lastSeen > merged.aiBotUrls[url].lastSeen) merged.aiBotUrls[url].lastSeen = urlStats.lastSeen;
+            if (urlStats.firstSeen < merged.aiBotUrls[url].firstSeen) merged.aiBotUrls[url].firstSeen = urlStats.firstSeen;
+        }
+    }
+
+    // Merge URL status codes
+    for (const stats of [stats1, stats2]) {
+        for (const [url, urlStats] of Object.entries(stats.urlStatusCodes)) {
+            if (!merged.urlStatusCodes[url]) {
+                merged.urlStatusCodes[url] = {
+                    hits: 0, statusCodes: {}, bots: new Set(), botHits: 0, humanHits: 0
+                };
+            }
+            merged.urlStatusCodes[url].hits += urlStats.hits;
+            merged.urlStatusCodes[url].botHits += urlStats.botHits;
+            merged.urlStatusCodes[url].humanHits += urlStats.humanHits;
+            for (const [code, count] of Object.entries(urlStats.statusCodes)) {
+                merged.urlStatusCodes[url].statusCodes[code] = (merged.urlStatusCodes[url].statusCodes[code] || 0) + count;
+            }
+            urlStats.bots.forEach(bot => merged.urlStatusCodes[url].bots.add(bot));
+        }
     }
 
     // Merge other maps
@@ -254,49 +428,33 @@ function mergeStats(stats1, stats2) {
     return merged;
 }
 
-function statsToSummary(stats, topN = 100) {
-    const botPercentage = stats.totalRequests > 0
-        ? (stats.botRequests / stats.totalRequests) * 100
-        : 0;
+// Store processed stats globally for filtering/sorting
+let globalStats = null;
+let rawLogEntries = []; // Store raw entries for filtering
 
-    // Top URLs
-    const topUrls = Object.entries(stats.hitsByUrl)
-        .sort((a, b) => b[1].hits - a[1].hits)
-        .slice(0, topN)
-        .map(([url, data]) => [url, data]);
+// Global filters state
+const globalFilters = {
+    dateStart: null,
+    dateEnd: null,
+    domain: '',
+    server: '',
+};
 
-    // Top Bots
-    const topBots = Object.entries(stats.hitsByBot)
-        .sort((a, b) => b[1].hits - a[1].hits)
-        .slice(0, topN)
-        .map(([name, data]) => [name, {
-            hits: data.hits,
-            category: data.category,
-            unique_urls_count: data.uniqueUrls.size,
-            verified_count: 0,
-            unverified_count: 0,
-        }]);
+// Sorting state
+const sortState = {
+    google: { column: 'hits', direction: 'desc' },
+    ai: { column: 'hits', direction: 'desc' },
+    urls: { column: 'hits', direction: 'desc' },
+    bots: { column: 'hits', direction: 'desc' },
+};
 
-    return {
-        total_requests: stats.totalRequests,
-        total_bytes: stats.totalBytes,
-        unique_urls_count: stats.uniqueUrls.size,
-        unique_ips_count: stats.uniqueIps.size,
-        bot_requests: stats.botRequests,
-        human_requests: stats.humanRequests,
-        verified_googlebot_requests: stats.verifiedGooglebotRequests,
-        bot_percentage: botPercentage,
-        status_distribution: stats.statusDistribution,
-        top_urls: topUrls,
-        top_bots: topBots,
-        hits_by_category: stats.hitsByCategory,
-        hits_by_hour: stats.hitsByHour,
-        hits_by_date: stats.hitsByDate,
-        hits_by_method: stats.hitsByMethod,
-        hits_by_domain: stats.hitsByDomain,
-        hits_by_server: stats.hitsByServer,
-    };
-}
+// Pagination state
+const pagination = {
+    google: { page: 0, pageSize: 50, data: [], filtered: [] },
+    ai: { page: 0, pageSize: 50, data: [], filtered: [] },
+    urls: { page: 0, pageSize: 50, data: [], filtered: [] },
+    status: { page: 0, pageSize: 50, data: [], filtered: [] },
+};
 
 // UI Code
 let selectedFiles = [];
@@ -310,6 +468,22 @@ const analyzeBtn = document.getElementById('analyze-btn');
 const uploadSection = document.getElementById('upload-section');
 const loadingSection = document.getElementById('loading');
 const resultsSection = document.getElementById('results');
+
+// Tab navigation
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Show corresponding tab content
+        const tabId = btn.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+    });
+});
 
 // Drag and drop handlers
 dropZone.addEventListener('dragover', (e) => {
@@ -371,7 +545,6 @@ function updateFileList() {
         </li>
     `).join('');
 
-    // Add remove handlers
     filesUl.querySelectorAll('.remove-file').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const index = parseInt(e.target.dataset.index, 10);
@@ -396,20 +569,23 @@ analyzeBtn.addEventListener('click', async () => {
 
     try {
         let combinedStats = null;
+        rawLogEntries = [];
 
         for (const file of selectedFiles) {
             const content = await file.text();
-            const stats = parseLogs(content);
+            const result = parseLogs(content, true);
 
             if (combinedStats === null) {
-                combinedStats = stats;
+                combinedStats = result.stats;
             } else {
-                combinedStats = mergeStats(combinedStats, stats);
+                combinedStats = mergeStats(combinedStats, result.stats);
             }
+            rawLogEntries = rawLogEntries.concat(result.entries);
         }
 
-        const summary = statsToSummary(combinedStats);
-        displayResults(summary);
+        globalStats = combinedStats;
+        initializeGlobalFilters(combinedStats);
+        displayResults(combinedStats);
     } catch (error) {
         console.error('Error parsing logs:', error);
         alert('Error parsing logs: ' + error.message);
@@ -419,33 +595,29 @@ analyzeBtn.addEventListener('click', async () => {
     }
 });
 
-function displayResults(summary) {
+function displayResults(stats) {
     resultsSection.classList.remove('hidden');
 
-    // Main stats
-    document.getElementById('total-requests').textContent = formatNumber(summary.total_requests);
-    document.getElementById('unique-urls').textContent = formatNumber(summary.unique_urls_count);
-    document.getElementById('unique-ips').textContent = formatNumber(summary.unique_ips_count);
-    document.getElementById('total-bytes').textContent = formatBytes(summary.total_bytes);
+    // Overview tab
+    displayOverview(stats);
 
-    document.getElementById('bot-requests').textContent = formatNumber(summary.bot_requests);
-    document.getElementById('bot-percentage').textContent = `${summary.bot_percentage.toFixed(1)}%`;
-    document.getElementById('human-requests').textContent = formatNumber(summary.human_requests);
-    document.getElementById('verified-googlebot').textContent = formatNumber(summary.verified_googlebot_requests);
+    // Google Bots tab
+    displayGoogleBots(stats);
 
-    // Bar charts
-    renderBarChart('status-codes', summary.status_distribution, summary.total_requests);
-    renderBarChart('methods', summary.hits_by_method, summary.total_requests);
-    renderBarChart('bot-categories', summary.hits_by_category, summary.bot_requests);
-    renderBarChart('domains', summary.hits_by_domain, summary.total_requests);
-    renderBarChart('servers', summary.hits_by_server, summary.total_requests);
-    renderBarChart('traffic-date', summary.hits_by_date, summary.total_requests, true);
+    // AI Bots tab
+    displayAIBots(stats);
 
-    // Tables
-    renderBotsTable(summary.top_bots);
-    renderUrlsTable(summary.top_urls);
+    // All Bots tab
+    displayAllBots(stats);
+
+    // URLs tab
+    displayUrls(stats);
+
+    // Status Codes tab
+    displayStatusCodes(stats);
 
     // Raw JSON
+    const summary = statsToSummary(stats);
     document.getElementById('raw-json').textContent = JSON.stringify(summary, null, 2);
 
     // Toggle raw JSON
@@ -457,7 +629,483 @@ function displayResults(summary) {
     };
 }
 
-function renderBarChart(elementId, data, total, sortByKey = false) {
+function displayOverview(stats) {
+    const botPercentage = stats.totalRequests > 0
+        ? (stats.botRequests / stats.totalRequests) * 100
+        : 0;
+
+    document.getElementById('total-requests').textContent = formatNumber(stats.totalRequests);
+    document.getElementById('unique-urls').textContent = formatNumber(stats.uniqueUrls.size);
+    document.getElementById('unique-ips').textContent = formatNumber(stats.uniqueIps.size);
+    document.getElementById('total-bytes').textContent = formatBytes(stats.totalBytes);
+
+    document.getElementById('bot-requests').textContent = formatNumber(stats.botRequests);
+    document.getElementById('bot-percentage').textContent = `${botPercentage.toFixed(1)}%`;
+    document.getElementById('human-requests').textContent = formatNumber(stats.humanRequests);
+    document.getElementById('verified-googlebot').textContent = formatNumber(stats.verifiedGooglebotRequests);
+
+    renderBarChart('status-codes', stats.statusDistribution, stats.totalRequests);
+    renderBarChart('methods', stats.hitsByMethod, stats.totalRequests);
+    renderBarChart('bot-categories', stats.hitsByCategory, stats.botRequests);
+    renderBarChart('domains', stats.hitsByDomain, stats.totalRequests);
+    renderBarChart('servers', stats.hitsByServer, stats.totalRequests);
+    renderBarChart('traffic-date', stats.hitsByDate, stats.totalRequests, true);
+}
+
+function displayGoogleBots(stats) {
+    // Calculate Google stats
+    const googleUrls = Object.entries(stats.googleBotUrls);
+    const totalHits = googleUrls.reduce((sum, [, data]) => sum + data.hits, 0);
+    const totalBytes = googleUrls.reduce((sum, [, data]) => sum + data.totalBytes, 0);
+    const avgBytes = totalHits > 0 ? totalBytes / totalHits : 0;
+
+    // Calculate error rate
+    let errorHits = 0;
+    googleUrls.forEach(([, data]) => {
+        for (const [code, count] of Object.entries(data.statusCodes)) {
+            if (parseInt(code) >= 400) errorHits += count;
+        }
+    });
+    const errorRate = totalHits > 0 ? (errorHits / totalHits) * 100 : 0;
+
+    document.getElementById('google-total-hits').textContent = formatNumber(totalHits);
+    document.getElementById('google-unique-urls').textContent = formatNumber(googleUrls.length);
+    document.getElementById('google-avg-bytes').textContent = formatBytes(avgBytes);
+    document.getElementById('google-error-rate').textContent = `${errorRate.toFixed(1)}%`;
+
+    // Google bot types chart
+    const googleBots = {};
+    for (const [bot, data] of Object.entries(stats.hitsByBot)) {
+        if (data.isGoogle) {
+            googleBots[bot] = data.hits;
+        }
+    }
+    renderBarChart('google-bot-types', googleBots, totalHits, false, 'google');
+
+    // Populate filter dropdown
+    const filterSelect = document.getElementById('google-bot-filter');
+    filterSelect.innerHTML = '<option value="">All Google Bots</option>';
+    Object.keys(googleBots).sort().forEach(bot => {
+        filterSelect.innerHTML += `<option value="${bot}">${bot}</option>`;
+    });
+
+    // Prepare table data
+    pagination.google.data = googleUrls.map(([url, data]) => ({
+        url,
+        hits: data.hits,
+        avgBytes: data.hits > 0 ? data.totalBytes / data.hits : 0,
+        statusCodes: data.statusCodes,
+        lastSeen: data.lastSeen,
+        bots: Array.from(data.bots),
+    })).sort((a, b) => b.hits - a.hits);
+
+    pagination.google.filtered = [...pagination.google.data];
+    pagination.google.page = 0;
+
+    renderGoogleTable();
+    setupTableSorting('google-urls-table', 'google', renderGoogleTable);
+
+    // Search handler (remove old listeners by cloning)
+    const searchInput = document.getElementById('google-url-search');
+    const newSearchInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+    newSearchInput.addEventListener('input', (e) => {
+        filterGoogleTable(e.target.value, filterSelect.value);
+    });
+
+    // Filter handler
+    const newFilterSelect = filterSelect.cloneNode(true);
+    filterSelect.parentNode.replaceChild(newFilterSelect, filterSelect);
+    newFilterSelect.addEventListener('change', (e) => {
+        filterGoogleTable(document.getElementById('google-url-search').value, e.target.value);
+    });
+
+    // Pagination
+    const prevBtn = document.getElementById('google-prev-btn');
+    const newPrevBtn = prevBtn.cloneNode(true);
+    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+    newPrevBtn.addEventListener('click', () => {
+        if (pagination.google.page > 0) {
+            pagination.google.page--;
+            renderGoogleTable();
+        }
+    });
+
+    const nextBtn = document.getElementById('google-next-btn');
+    const newNextBtn = nextBtn.cloneNode(true);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+    newNextBtn.addEventListener('click', () => {
+        const maxPage = Math.ceil(pagination.google.filtered.length / pagination.google.pageSize) - 1;
+        if (pagination.google.page < maxPage) {
+            pagination.google.page++;
+            renderGoogleTable();
+        }
+    });
+}
+
+function filterGoogleTable(search, botFilter) {
+    pagination.google.filtered = pagination.google.data.filter(row => {
+        const matchesSearch = !search || row.url.toLowerCase().includes(search.toLowerCase());
+        const matchesBot = !botFilter || row.bots.includes(botFilter);
+        return matchesSearch && matchesBot;
+    });
+    pagination.google.page = 0;
+    renderGoogleTable();
+}
+
+function renderGoogleTable() {
+    const { page, pageSize, filtered } = pagination.google;
+    const start = page * pageSize;
+    const end = start + pageSize;
+    const pageData = filtered.slice(start, end);
+
+    const tbody = document.querySelector('#google-urls-table tbody');
+    tbody.innerHTML = pageData.map(row => `
+        <tr>
+            <td title="${row.url}">${row.url}</td>
+            <td class="num">${formatNumber(row.hits)}</td>
+            <td class="num">${formatBytes(row.avgBytes)}</td>
+            <td>${renderStatusPills(row.statusCodes)}</td>
+            <td>${row.lastSeen || '-'}</td>
+        </tr>
+    `).join('');
+
+    const total = filtered.length;
+    const showing = Math.min(end, total);
+    document.getElementById('google-table-info').textContent =
+        `Showing ${start + 1}-${showing} of ${total} URLs`;
+
+    document.getElementById('google-prev-btn').disabled = page === 0;
+    document.getElementById('google-next-btn').disabled = end >= total;
+}
+
+function displayAIBots(stats) {
+    // Calculate AI stats
+    const aiUrls = Object.entries(stats.aiBotUrls);
+    const totalHits = aiUrls.reduce((sum, [, data]) => sum + data.hits, 0);
+    const totalBytes = aiUrls.reduce((sum, [, data]) => sum + data.totalBytes, 0);
+    const avgBytes = totalHits > 0 ? totalBytes / totalHits : 0;
+
+    // Count unique AI bots
+    const aiBots = {};
+    for (const [bot, data] of Object.entries(stats.hitsByBot)) {
+        if (data.isAI) {
+            aiBots[bot] = data.hits;
+        }
+    }
+
+    document.getElementById('ai-total-hits').textContent = formatNumber(totalHits);
+    document.getElementById('ai-unique-urls').textContent = formatNumber(aiUrls.length);
+    document.getElementById('ai-avg-bytes').textContent = formatBytes(avgBytes);
+    document.getElementById('ai-bot-count').textContent = formatNumber(Object.keys(aiBots).length);
+
+    // AI bot types chart
+    renderBarChart('ai-bot-types', aiBots, totalHits, false, 'ai');
+
+    // Populate filter dropdown
+    const filterSelect = document.getElementById('ai-bot-filter');
+    filterSelect.innerHTML = '<option value="">All AI Bots</option>';
+    Object.keys(aiBots).sort().forEach(bot => {
+        filterSelect.innerHTML += `<option value="${bot}">${bot}</option>`;
+    });
+
+    // Prepare table data
+    pagination.ai.data = aiUrls.map(([url, data]) => ({
+        url,
+        hits: data.hits,
+        avgBytes: data.hits > 0 ? data.totalBytes / data.hits : 0,
+        statusCodes: data.statusCodes,
+        bots: Array.from(data.bots),
+    })).sort((a, b) => b.hits - a.hits);
+
+    pagination.ai.filtered = [...pagination.ai.data];
+    pagination.ai.page = 0;
+
+    renderAITable();
+    setupTableSorting('ai-urls-table', 'ai', renderAITable);
+
+    // Search handler (clone to remove old listeners)
+    const searchInput = document.getElementById('ai-url-search');
+    const newSearchInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+    newSearchInput.addEventListener('input', (e) => {
+        filterAITable(e.target.value, document.getElementById('ai-bot-filter').value);
+    });
+
+    // Filter handler
+    const newFilterSelect = filterSelect.cloneNode(true);
+    filterSelect.parentNode.replaceChild(newFilterSelect, filterSelect);
+    newFilterSelect.addEventListener('change', (e) => {
+        filterAITable(document.getElementById('ai-url-search').value, e.target.value);
+    });
+
+    // Pagination
+    const prevBtn = document.getElementById('ai-prev-btn');
+    const newPrevBtn = prevBtn.cloneNode(true);
+    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+    newPrevBtn.addEventListener('click', () => {
+        if (pagination.ai.page > 0) {
+            pagination.ai.page--;
+            renderAITable();
+        }
+    });
+
+    const nextBtn = document.getElementById('ai-next-btn');
+    const newNextBtn = nextBtn.cloneNode(true);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+    newNextBtn.addEventListener('click', () => {
+        const maxPage = Math.ceil(pagination.ai.filtered.length / pagination.ai.pageSize) - 1;
+        if (pagination.ai.page < maxPage) {
+            pagination.ai.page++;
+            renderAITable();
+        }
+    });
+}
+
+function filterAITable(search, botFilter) {
+    pagination.ai.filtered = pagination.ai.data.filter(row => {
+        const matchesSearch = !search || row.url.toLowerCase().includes(search.toLowerCase());
+        const matchesBot = !botFilter || row.bots.includes(botFilter);
+        return matchesSearch && matchesBot;
+    });
+    pagination.ai.page = 0;
+    renderAITable();
+}
+
+function renderAITable() {
+    const { page, pageSize, filtered } = pagination.ai;
+    const start = page * pageSize;
+    const end = start + pageSize;
+    const pageData = filtered.slice(start, end);
+
+    const tbody = document.querySelector('#ai-urls-table tbody');
+    tbody.innerHTML = pageData.map(row => `
+        <tr>
+            <td title="${row.url}">${row.url}</td>
+            <td class="num">${formatNumber(row.hits)}</td>
+            <td class="num">${formatBytes(row.avgBytes)}</td>
+            <td>${renderStatusPills(row.statusCodes)}</td>
+            <td>${renderBotPills(row.bots)}</td>
+        </tr>
+    `).join('');
+
+    const total = filtered.length;
+    const showing = Math.min(end, total);
+    document.getElementById('ai-table-info').textContent =
+        `Showing ${start + 1}-${showing} of ${total} URLs`;
+
+    document.getElementById('ai-prev-btn').disabled = page === 0;
+    document.getElementById('ai-next-btn').disabled = end >= total;
+}
+
+function displayAllBots(stats) {
+    // Prepare bots data for sorting and export
+    pagination.bots = pagination.bots || { data: [], filtered: [] };
+    pagination.bots.data = Object.entries(stats.hitsByBot).map(([name, data]) => ({
+        name,
+        category: data.category,
+        hits: data.hits,
+        urls: data.uniqueUrls.size,
+        totalBytes: data.totalBytes,
+        avgBytes: data.hits > 0 ? data.totalBytes / data.hits : 0,
+    })).sort((a, b) => b.hits - a.hits);
+
+    pagination.bots.filtered = [...pagination.bots.data];
+
+    renderBotsTable();
+    setupTableSorting('top-bots', 'bots', renderBotsTable);
+}
+
+function renderBotsTable() {
+    const data = pagination.bots.filtered.slice(0, 100);
+    const tbody = document.querySelector('#top-bots tbody');
+    tbody.innerHTML = data.map(row => `
+        <tr>
+            <td>${row.name}</td>
+            <td>${row.category}</td>
+            <td class="num">${formatNumber(row.hits)}</td>
+            <td class="num">${formatNumber(row.urls)}</td>
+            <td class="num">${formatBytes(row.avgBytes)}</td>
+        </tr>
+    `).join('');
+}
+
+function displayUrls(stats) {
+    // Prepare URL data
+    pagination.urls.data = Object.entries(stats.hitsByUrl).map(([url, data]) => ({
+        url,
+        hits: data.hits,
+        botHits: data.botHits,
+        humanHits: data.humanHits,
+        avgBytes: data.hits > 0 ? data.bytesTotal / data.hits : 0,
+        statusCodes: data.statusCodes,
+    })).sort((a, b) => b.hits - a.hits);
+
+    pagination.urls.filtered = [...pagination.urls.data];
+    pagination.urls.page = 0;
+
+    renderUrlsTable();
+    setupTableSorting('top-urls', 'urls', renderUrlsTable);
+
+    // Search handler (clone to remove old listeners)
+    const searchInput = document.getElementById('urls-search');
+    const newSearchInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+    newSearchInput.addEventListener('input', (e) => {
+        const search = e.target.value.toLowerCase();
+        pagination.urls.filtered = pagination.urls.data.filter(row =>
+            row.url.toLowerCase().includes(search)
+        );
+        pagination.urls.page = 0;
+        renderUrlsTable();
+    });
+
+    // Pagination
+    const prevBtn = document.getElementById('urls-prev-btn');
+    const newPrevBtn = prevBtn.cloneNode(true);
+    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+    newPrevBtn.addEventListener('click', () => {
+        if (pagination.urls.page > 0) {
+            pagination.urls.page--;
+            renderUrlsTable();
+        }
+    });
+
+    const nextBtn = document.getElementById('urls-next-btn');
+    const newNextBtn = nextBtn.cloneNode(true);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+    newNextBtn.addEventListener('click', () => {
+        const maxPage = Math.ceil(pagination.urls.filtered.length / pagination.urls.pageSize) - 1;
+        if (pagination.urls.page < maxPage) {
+            pagination.urls.page++;
+            renderUrlsTable();
+        }
+    });
+}
+
+function renderUrlsTable() {
+    const { page, pageSize, filtered } = pagination.urls;
+    const start = page * pageSize;
+    const end = start + pageSize;
+    const pageData = filtered.slice(start, end);
+
+    const tbody = document.querySelector('#top-urls tbody');
+    tbody.innerHTML = pageData.map(row => `
+        <tr>
+            <td title="${row.url}">${row.url}</td>
+            <td class="num">${formatNumber(row.hits)}</td>
+            <td class="num">${formatNumber(row.botHits)}</td>
+            <td class="num">${formatNumber(row.humanHits)}</td>
+            <td class="num">${formatBytes(row.avgBytes)}</td>
+            <td>${renderStatusPills(row.statusCodes)}</td>
+        </tr>
+    `).join('');
+
+    const total = filtered.length;
+    const showing = Math.min(end, total);
+    document.getElementById('urls-table-info').textContent =
+        `Showing ${start + 1}-${showing} of ${total} URLs`;
+
+    document.getElementById('urls-prev-btn').disabled = page === 0;
+    document.getElementById('urls-next-btn').disabled = end >= total;
+}
+
+function displayStatusCodes(stats) {
+    // Calculate status code groups
+    let s2xx = 0, s3xx = 0, s4xx = 0, s5xx = 0;
+    for (const [code, count] of Object.entries(stats.statusDistribution)) {
+        const c = parseInt(code);
+        if (c >= 200 && c < 300) s2xx += count;
+        else if (c >= 300 && c < 400) s3xx += count;
+        else if (c >= 400 && c < 500) s4xx += count;
+        else if (c >= 500) s5xx += count;
+    }
+
+    document.getElementById('status-2xx').textContent = formatNumber(s2xx);
+    document.getElementById('status-3xx').textContent = formatNumber(s3xx);
+    document.getElementById('status-4xx').textContent = formatNumber(s4xx);
+    document.getElementById('status-5xx').textContent = formatNumber(s5xx);
+
+    // Status distribution chart
+    renderBarChart('status-codes-detail', stats.statusDistribution, stats.totalRequests);
+
+    // Populate filter
+    const filterSelect = document.getElementById('status-filter');
+    filterSelect.innerHTML = '<option value="">All Status Codes</option>';
+    Object.keys(stats.statusDistribution).sort().forEach(code => {
+        filterSelect.innerHTML += `<option value="${code}">${code}</option>`;
+    });
+
+    // Prepare table data with inconsistency detection
+    pagination.status.data = Object.entries(stats.urlStatusCodes).map(([url, data]) => {
+        const codes = Object.keys(data.statusCodes);
+        const isInconsistent = codes.length > 1;
+        return {
+            url,
+            hits: data.hits,
+            statusCodes: data.statusCodes,
+            isInconsistent,
+        };
+    }).sort((a, b) => b.hits - a.hits);
+
+    pagination.status.filtered = [...pagination.status.data];
+    pagination.status.page = 0;
+
+    renderStatusTable();
+
+    // Filter handler
+    filterSelect.addEventListener('change', (e) => {
+        const code = e.target.value;
+        if (code) {
+            pagination.status.filtered = pagination.status.data.filter(row =>
+                row.statusCodes[code] !== undefined
+            );
+        } else {
+            pagination.status.filtered = [...pagination.status.data];
+        }
+        pagination.status.page = 0;
+        renderStatusTable();
+    });
+}
+
+function renderStatusTable() {
+    const { page, pageSize, filtered } = pagination.status;
+    const start = page * pageSize;
+    const end = start + pageSize;
+    const pageData = filtered.slice(start, end);
+
+    const tbody = document.querySelector('#status-urls-table tbody');
+    tbody.innerHTML = pageData.map(row => `
+        <tr>
+            <td title="${row.url}">${row.url}</td>
+            <td class="num">${formatNumber(row.hits)}</td>
+            <td>${renderStatusPills(row.statusCodes)}</td>
+            <td>${row.isInconsistent ? '<span class="flag-inconsistent">Yes</span>' : '-'}</td>
+        </tr>
+    `).join('');
+}
+
+function renderStatusPills(statusCodes) {
+    return Object.entries(statusCodes)
+        .sort((a, b) => b[1] - a[1])
+        .map(([code, count]) => {
+            const c = parseInt(code);
+            let cls = '';
+            if (c >= 200 && c < 300) cls = 's2xx';
+            else if (c >= 300 && c < 400) cls = 's3xx';
+            else if (c >= 400 && c < 500) cls = 's4xx';
+            else if (c >= 500) cls = 's5xx';
+            return `<span class="status-pill ${cls}">${code}: ${count}</span>`;
+        }).join(' ');
+}
+
+function renderBotPills(bots) {
+    return bots.slice(0, 3).map(bot =>
+        `<span class="bot-pill">${bot}</span>`
+    ).join(' ') + (bots.length > 3 ? ` +${bots.length - 3}` : '');
+}
+
+function renderBarChart(elementId, data, total, sortByKey = false, barClass = '') {
     const container = document.getElementById(elementId);
     let entries = Object.entries(data);
 
@@ -482,7 +1130,7 @@ function renderBarChart(elementId, data, total, sortByKey = false) {
             <div class="bar-row">
                 <span class="bar-label" title="${label}">${label}</span>
                 <div class="bar-container">
-                    <div class="bar" style="width: ${percentage}%">
+                    <div class="bar ${barClass}" style="width: ${percentage}%">
                         <span class="bar-value">${formatNumber(value)}</span>
                     </div>
                 </div>
@@ -491,28 +1139,419 @@ function renderBarChart(elementId, data, total, sortByKey = false) {
     }).join('');
 }
 
-function renderBotsTable(topBots) {
-    const tbody = document.querySelector('#top-bots tbody');
-    tbody.innerHTML = topBots.slice(0, 20).map(([name, data]) => `
-        <tr>
-            <td>${name}</td>
-            <td>${data.category}</td>
-            <td>${formatNumber(data.hits)}</td>
-            <td>${formatNumber(data.unique_urls_count)}</td>
-            <td>${formatNumber(data.verified_count)}</td>
-        </tr>
-    `).join('');
+function statsToSummary(stats, topN = 100) {
+    const botPercentage = stats.totalRequests > 0
+        ? (stats.botRequests / stats.totalRequests) * 100
+        : 0;
+
+    const topUrls = Object.entries(stats.hitsByUrl)
+        .sort((a, b) => b[1].hits - a[1].hits)
+        .slice(0, topN)
+        .map(([url, data]) => [url, data]);
+
+    const topBots = Object.entries(stats.hitsByBot)
+        .sort((a, b) => b[1].hits - a[1].hits)
+        .slice(0, topN)
+        .map(([name, data]) => [name, {
+            hits: data.hits,
+            category: data.category,
+            unique_urls_count: data.uniqueUrls.size,
+            total_bytes: data.totalBytes,
+            is_google: data.isGoogle,
+            is_ai: data.isAI,
+        }]);
+
+    return {
+        total_requests: stats.totalRequests,
+        total_bytes: stats.totalBytes,
+        unique_urls_count: stats.uniqueUrls.size,
+        unique_ips_count: stats.uniqueIps.size,
+        bot_requests: stats.botRequests,
+        human_requests: stats.humanRequests,
+        verified_googlebot_requests: stats.verifiedGooglebotRequests,
+        bot_percentage: botPercentage,
+        status_distribution: stats.statusDistribution,
+        top_urls: topUrls,
+        top_bots: topBots,
+        hits_by_category: stats.hitsByCategory,
+        hits_by_date: stats.hitsByDate,
+        hits_by_method: stats.hitsByMethod,
+        hits_by_domain: stats.hitsByDomain,
+        hits_by_server: stats.hitsByServer,
+    };
 }
 
-function renderUrlsTable(topUrls) {
-    const tbody = document.querySelector('#top-urls tbody');
-    tbody.innerHTML = topUrls.slice(0, 20).map(([url, data]) => `
-        <tr>
-            <td title="${url}">${url}</td>
-            <td>${formatNumber(data.hits)}</td>
-            <td>${formatNumber(data.botHits)}</td>
-            <td>${formatNumber(data.humanHits)}</td>
-            <td>${formatBytes(data.bytesTotal)}</td>
-        </tr>
-    `).join('');
+// ============================================
+// GLOBAL FILTERS
+// ============================================
+
+function initializeGlobalFilters(stats) {
+    // Populate domain filter
+    const domainSelect = document.getElementById('filter-domain');
+    domainSelect.innerHTML = '<option value="">All Domains</option>';
+    Object.keys(stats.hitsByDomain).sort().forEach(domain => {
+        if (domain) domainSelect.innerHTML += `<option value="${domain}">${domain}</option>`;
+    });
+
+    // Populate server filter
+    const serverSelect = document.getElementById('filter-server');
+    serverSelect.innerHTML = '<option value="">All Servers</option>';
+    Object.keys(stats.hitsByServer).sort().forEach(server => {
+        if (server) serverSelect.innerHTML += `<option value="${server}">${server}</option>`;
+    });
+
+    // Set date range from data
+    const dates = Object.keys(stats.hitsByDate).sort();
+    if (dates.length > 0) {
+        document.getElementById('filter-date-start').value = dates[0];
+        document.getElementById('filter-date-end').value = dates[dates.length - 1];
+    }
+
+    // Apply filters button
+    document.getElementById('apply-filters-btn').addEventListener('click', applyGlobalFilters);
+    document.getElementById('reset-filters-btn').addEventListener('click', resetGlobalFilters);
 }
+
+function applyGlobalFilters() {
+    globalFilters.dateStart = document.getElementById('filter-date-start').value || null;
+    globalFilters.dateEnd = document.getElementById('filter-date-end').value || null;
+    globalFilters.domain = document.getElementById('filter-domain').value;
+    globalFilters.server = document.getElementById('filter-server').value;
+
+    // Filter raw entries and rebuild stats
+    const filteredEntries = rawLogEntries.filter(entry => {
+        // Parse date from entry
+        let dateStr = '';
+        const dateMatch = entry.datetime.match(/(\d{2})\/(\w{3})\/(\d{4})/);
+        if (dateMatch) {
+            const [, day, month, year] = dateMatch;
+            const monthNum = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+                              Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' }[month] || '01';
+            dateStr = `${year}-${monthNum}-${day}`;
+        }
+
+        // Date filter
+        if (globalFilters.dateStart && dateStr < globalFilters.dateStart) return false;
+        if (globalFilters.dateEnd && dateStr > globalFilters.dateEnd) return false;
+
+        // Domain filter
+        if (globalFilters.domain && entry.domain !== globalFilters.domain) return false;
+
+        // Server filter
+        if (globalFilters.server && entry.server !== globalFilters.server) return false;
+
+        return true;
+    });
+
+    // Rebuild stats from filtered entries
+    const filteredStats = buildStatsFromEntries(filteredEntries);
+    displayResults(filteredStats);
+}
+
+function resetGlobalFilters() {
+    globalFilters.dateStart = null;
+    globalFilters.dateEnd = null;
+    globalFilters.domain = '';
+    globalFilters.server = '';
+
+    document.getElementById('filter-domain').value = '';
+    document.getElementById('filter-server').value = '';
+
+    // Reset date inputs to full range
+    const dates = Object.keys(globalStats.hitsByDate).sort();
+    if (dates.length > 0) {
+        document.getElementById('filter-date-start').value = dates[0];
+        document.getElementById('filter-date-end').value = dates[dates.length - 1];
+    }
+
+    displayResults(globalStats);
+}
+
+function buildStatsFromEntries(entries) {
+    const stats = {
+        totalRequests: 0,
+        totalBytes: 0,
+        uniqueUrls: new Set(),
+        uniqueIps: new Set(),
+        botRequests: 0,
+        humanRequests: 0,
+        verifiedGooglebotRequests: 0,
+        statusDistribution: {},
+        hitsByUrl: {},
+        hitsByBot: {},
+        hitsByCategory: {},
+        hitsByHour: {},
+        hitsByDate: {},
+        hitsByMethod: {},
+        hitsByDomain: {},
+        hitsByServer: {},
+        googleBotUrls: {},
+        aiBotUrls: {},
+        urlStatusCodes: {},
+    };
+
+    for (const entry of entries) {
+        stats.totalRequests++;
+        stats.totalBytes += entry.bytesSent;
+        stats.uniqueUrls.add(entry.url);
+        entry.ips.forEach(ip => stats.uniqueIps.add(ip));
+
+        if (entry.isBot) {
+            stats.botRequests++;
+        } else {
+            stats.humanRequests++;
+        }
+
+        stats.statusDistribution[entry.statusCode] = (stats.statusDistribution[entry.statusCode] || 0) + 1;
+
+        let dateStr = '';
+        const dateMatch = entry.datetime.match(/(\d{2})\/(\w{3})\/(\d{4}):(\d{2})/);
+        if (dateMatch) {
+            const [, day, month, year, hour] = dateMatch;
+            const monthNum = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+                              Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' }[month] || '01';
+            dateStr = `${year}-${monthNum}-${day}`;
+            const hourKey = `${dateStr} ${hour}:00`;
+            stats.hitsByDate[dateStr] = (stats.hitsByDate[dateStr] || 0) + 1;
+            stats.hitsByHour[hourKey] = (stats.hitsByHour[hourKey] || 0) + 1;
+        }
+
+        if (!stats.hitsByUrl[entry.url]) {
+            stats.hitsByUrl[entry.url] = {
+                hits: 0, botHits: 0, humanHits: 0, bytesTotal: 0,
+                statusCodes: {}, firstSeen: dateStr, lastSeen: dateStr
+            };
+        }
+        const urlStats = stats.hitsByUrl[entry.url];
+        urlStats.hits++;
+        urlStats.bytesTotal += entry.bytesSent;
+        urlStats.statusCodes[entry.statusCode] = (urlStats.statusCodes[entry.statusCode] || 0) + 1;
+        if (dateStr > urlStats.lastSeen) urlStats.lastSeen = dateStr;
+        if (dateStr < urlStats.firstSeen) urlStats.firstSeen = dateStr;
+        if (entry.isBot) urlStats.botHits++;
+        else urlStats.humanHits++;
+
+        if (!stats.urlStatusCodes[entry.url]) {
+            stats.urlStatusCodes[entry.url] = { hits: 0, statusCodes: {}, bots: new Set(), botHits: 0, humanHits: 0 };
+        }
+        stats.urlStatusCodes[entry.url].hits++;
+        stats.urlStatusCodes[entry.url].statusCodes[entry.statusCode] =
+            (stats.urlStatusCodes[entry.url].statusCodes[entry.statusCode] || 0) + 1;
+        if (entry.isBot) {
+            stats.urlStatusCodes[entry.url].bots.add(entry.botName);
+            stats.urlStatusCodes[entry.url].botHits++;
+        } else {
+            stats.urlStatusCodes[entry.url].humanHits++;
+        }
+
+        if (entry.isBot && entry.botName) {
+            if (!stats.hitsByBot[entry.botName]) {
+                stats.hitsByBot[entry.botName] = {
+                    hits: 0, category: entry.botCategory, uniqueUrls: new Set(),
+                    totalBytes: 0, isGoogle: entry.isGoogle, isAI: entry.isAI
+                };
+            }
+            stats.hitsByBot[entry.botName].hits++;
+            stats.hitsByBot[entry.botName].uniqueUrls.add(entry.url);
+            stats.hitsByBot[entry.botName].totalBytes += entry.bytesSent;
+            stats.hitsByCategory[entry.botCategory] = (stats.hitsByCategory[entry.botCategory] || 0) + 1;
+
+            if (entry.isGoogle) {
+                if (!stats.googleBotUrls[entry.url]) {
+                    stats.googleBotUrls[entry.url] = {
+                        hits: 0, totalBytes: 0, statusCodes: {},
+                        firstSeen: dateStr, lastSeen: dateStr, bots: new Set()
+                    };
+                }
+                const gUrl = stats.googleBotUrls[entry.url];
+                gUrl.hits++;
+                gUrl.totalBytes += entry.bytesSent;
+                gUrl.statusCodes[entry.statusCode] = (gUrl.statusCodes[entry.statusCode] || 0) + 1;
+                gUrl.bots.add(entry.botName);
+                if (dateStr > gUrl.lastSeen) gUrl.lastSeen = dateStr;
+                if (dateStr < gUrl.firstSeen) gUrl.firstSeen = dateStr;
+            }
+
+            if (entry.isAI) {
+                if (!stats.aiBotUrls[entry.url]) {
+                    stats.aiBotUrls[entry.url] = {
+                        hits: 0, totalBytes: 0, statusCodes: {},
+                        firstSeen: dateStr, lastSeen: dateStr, bots: new Set()
+                    };
+                }
+                const aiUrl = stats.aiBotUrls[entry.url];
+                aiUrl.hits++;
+                aiUrl.totalBytes += entry.bytesSent;
+                aiUrl.statusCodes[entry.statusCode] = (aiUrl.statusCodes[entry.statusCode] || 0) + 1;
+                aiUrl.bots.add(entry.botName);
+                if (dateStr > aiUrl.lastSeen) aiUrl.lastSeen = dateStr;
+                if (dateStr < aiUrl.firstSeen) aiUrl.firstSeen = dateStr;
+            }
+        }
+
+        stats.hitsByMethod[entry.method] = (stats.hitsByMethod[entry.method] || 0) + 1;
+        stats.hitsByDomain[entry.domain] = (stats.hitsByDomain[entry.domain] || 0) + 1;
+        stats.hitsByServer[entry.server] = (stats.hitsByServer[entry.server] || 0) + 1;
+    }
+
+    return stats;
+}
+
+// ============================================
+// SORTING
+// ============================================
+
+function setupTableSorting(tableId, paginationKey, renderFn) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    table.querySelectorAll('th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const column = th.dataset.sort;
+            const state = sortState[paginationKey];
+
+            // Toggle direction or change column
+            if (state.column === column) {
+                state.direction = state.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.column = column;
+                state.direction = 'desc';
+            }
+
+            // Update UI
+            table.querySelectorAll('th').forEach(h => {
+                h.classList.remove('sorted-asc', 'sorted-desc');
+            });
+            th.classList.add(state.direction === 'asc' ? 'sorted-asc' : 'sorted-desc');
+
+            // Sort data
+            sortPaginationData(paginationKey, column, state.direction);
+            pagination[paginationKey].page = 0;
+            renderFn();
+        });
+    });
+}
+
+function sortPaginationData(key, column, direction) {
+    const data = pagination[key].filtered;
+    const multiplier = direction === 'asc' ? 1 : -1;
+
+    data.sort((a, b) => {
+        let valA = a[column];
+        let valB = b[column];
+
+        // Handle special cases
+        if (column === 'status' || column === 'statusCodes') {
+            valA = Object.keys(a.statusCodes || {}).join(',');
+            valB = Object.keys(b.statusCodes || {}).join(',');
+        }
+        if (column === 'bots' && Array.isArray(valA)) {
+            valA = valA.join(',');
+            valB = valB.join(',');
+        }
+
+        if (typeof valA === 'string') {
+            return multiplier * valA.localeCompare(valB);
+        }
+        return multiplier * (valA - valB);
+    });
+}
+
+// ============================================
+// CSV EXPORT
+// ============================================
+
+function downloadCSV(filename, headers, rows) {
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => {
+            // Escape quotes and wrap in quotes if contains comma
+            const str = String(cell);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        }).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+function setupCSVExports() {
+    // Google Bots CSV
+    document.getElementById('google-export-csv')?.addEventListener('click', () => {
+        const headers = ['URL', 'Hits', 'Avg Bytes', 'Status Codes', 'Last Seen', 'Bots'];
+        const rows = pagination.google.filtered.map(row => [
+            row.url,
+            row.hits,
+            Math.round(row.avgBytes),
+            Object.entries(row.statusCodes).map(([c, n]) => `${c}:${n}`).join('; '),
+            row.lastSeen || '',
+            row.bots.join('; ')
+        ]);
+        downloadCSV('google-bots-urls.csv', headers, rows);
+    });
+
+    // AI Bots CSV
+    document.getElementById('ai-export-csv')?.addEventListener('click', () => {
+        const headers = ['URL', 'Hits', 'Avg Bytes', 'Status Codes', 'Bots'];
+        const rows = pagination.ai.filtered.map(row => [
+            row.url,
+            row.hits,
+            Math.round(row.avgBytes),
+            Object.entries(row.statusCodes).map(([c, n]) => `${c}:${n}`).join('; '),
+            row.bots.join('; ')
+        ]);
+        downloadCSV('ai-bots-urls.csv', headers, rows);
+    });
+
+    // All Bots CSV
+    document.getElementById('bots-export-csv')?.addEventListener('click', () => {
+        const headers = ['Bot', 'Category', 'Hits', 'Unique URLs', 'Total Bytes', 'Avg Bytes'];
+        const rows = pagination.bots?.data?.map(row => [
+            row.name,
+            row.category,
+            row.hits,
+            row.urls,
+            row.totalBytes,
+            Math.round(row.avgBytes)
+        ]) || [];
+        downloadCSV('all-bots.csv', headers, rows);
+    });
+
+    // URLs CSV
+    document.getElementById('urls-export-csv')?.addEventListener('click', () => {
+        const headers = ['URL', 'Total Hits', 'Bot Hits', 'Human Hits', 'Avg Bytes', 'Status Codes'];
+        const rows = pagination.urls.filtered.map(row => [
+            row.url,
+            row.hits,
+            row.botHits,
+            row.humanHits,
+            Math.round(row.avgBytes),
+            Object.entries(row.statusCodes).map(([c, n]) => `${c}:${n}`).join('; ')
+        ]);
+        downloadCSV('all-urls.csv', headers, rows);
+    });
+
+    // Status Codes CSV
+    document.getElementById('status-export-csv')?.addEventListener('click', () => {
+        const headers = ['URL', 'Hits', 'Status Codes', 'Inconsistent'];
+        const rows = pagination.status.filtered.map(row => [
+            row.url,
+            row.hits,
+            Object.entries(row.statusCodes).map(([c, n]) => `${c}:${n}`).join('; '),
+            row.isInconsistent ? 'Yes' : 'No'
+        ]);
+        downloadCSV('status-codes.csv', headers, rows);
+    });
+}
+
+// Initialize sorting and CSV exports after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    setupCSVExports();
+});
