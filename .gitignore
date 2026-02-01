@@ -1,8 +1,14 @@
-__pycache__/
-*.py[cod]
-*.so
-.DS_Store
+# Rust
+rust_parser/.rust/
+rust_parser/target/
+
+# Logs
 *.log
-.env
-venv/
-.venv/
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp

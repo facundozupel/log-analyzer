@@ -1,0 +1,19 @@
+# Local Rust installation (isolated environment)
+.rust/
+
+# Build artifacts
+target/
+
+# Cargo lock (optional, can be committed for binaries)
+# Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
