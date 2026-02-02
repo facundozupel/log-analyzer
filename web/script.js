@@ -760,6 +760,8 @@ function filterLogLines(search, botFilter) {
     renderLogLinesTable();
 }
 
+let selectedLogIndex = null;
+
 function renderLogLinesTable() {
     const { page, pageSize, filtered } = pagination.logs;
     const start = page * pageSize;
@@ -767,12 +769,14 @@ function renderLogLinesTable() {
     const pageData = filtered.slice(start, end);
 
     const tbody = document.querySelector('#log-lines-table tbody');
-    tbody.innerHTML = pageData.map(row => {
+    tbody.innerHTML = pageData.map((row, idx) => {
+        const globalIdx = start + idx;
         const statusClass = row.statusCode >= 500 ? 's5xx' :
                            row.statusCode >= 400 ? 's4xx' :
                            row.statusCode >= 300 ? 's3xx' : 's2xx';
+        const selectedClass = selectedLogIndex === globalIdx ? 'selected' : '';
         return `
-        <tr>
+        <tr class="${selectedClass}" data-index="${globalIdx}">
             <td>${row.datetime}</td>
             <td>${row.method}</td>
             <td title="${row.url}">${row.url}</td>
@@ -784,6 +788,14 @@ function renderLogLinesTable() {
         </tr>
     `}).join('');
 
+    // Add click handlers to rows
+    tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('click', () => {
+            const idx = parseInt(tr.dataset.index, 10);
+            selectLogRow(idx);
+        });
+    });
+
     const total = filtered.length;
     const showing = Math.min(end, total);
     document.getElementById('logs-table-info').textContent =
@@ -791,6 +803,67 @@ function renderLogLinesTable() {
 
     document.getElementById('logs-prev-btn').disabled = page === 0;
     document.getElementById('logs-next-btn').disabled = end >= total;
+}
+
+function selectLogRow(index) {
+    selectedLogIndex = index;
+    const entry = pagination.logs.filtered[index];
+
+    // Update selected row styling
+    document.querySelectorAll('#log-lines-table tbody tr').forEach(tr => {
+        tr.classList.remove('selected');
+        if (parseInt(tr.dataset.index, 10) === index) {
+            tr.classList.add('selected');
+        }
+    });
+
+    // Show detail panel
+    showLogDetail(entry);
+}
+
+function showLogDetail(entry) {
+    const panel = document.getElementById('log-detail-panel');
+    const content = document.getElementById('log-detail-content');
+
+    const fields = [
+        ['Row', selectedLogIndex + 1],
+        ['DateTime', entry.datetime],
+        ['Method', entry.method],
+        ['URL', entry.url],
+        ['Status Code', entry.statusCode],
+        ['Bytes Sent', `${entry.bytesSent} (${formatBytes(entry.bytesSent)})`],
+        ['Is Bot', entry.isBot ? 'Yes' : 'No'],
+        ['Bot Name', entry.botName || '-'],
+        ['Bot Category', entry.botCategory || '-'],
+        ['Is Google Bot', entry.isGoogle ? 'Yes' : 'No'],
+        ['Is AI Bot', entry.isAI ? 'Yes' : 'No'],
+        ['IP Addresses', entry.ips.join(', ')],
+        ['Domain', entry.domain],
+        ['Server', entry.server],
+        ['Referer', entry.referer || '-'],
+        ['User Agent', entry.userAgent],
+    ];
+
+    content.innerHTML = fields.map(([name, value]) => `
+        <div class="detail-row">
+            <div class="detail-name">${name}</div>
+            <div class="detail-value">${value}</div>
+        </div>
+    `).join('');
+
+    panel.classList.remove('hidden');
+
+    // Setup close button
+    const closeBtn = document.getElementById('close-detail-btn');
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    newCloseBtn.addEventListener('click', () => {
+        panel.classList.add('hidden');
+        selectedLogIndex = null;
+        document.querySelectorAll('#log-lines-table tbody tr').forEach(tr => {
+            tr.classList.remove('selected');
+        });
+    });
 }
 
 function displayGoogleBots(stats) {

@@ -707,6 +707,74 @@ footer {
     font-size: 0.875rem;
 }
 
+/* Detail Panel (Master-Detail View) */
+.detail-panel {
+    margin-top: 1rem;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-header h3 {
+    margin-bottom: 0;
+    color: var(--text-primary);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.detail-row {
+    display: contents;
+}
+
+.detail-row:hover .detail-name,
+.detail-row:hover .detail-value {
+    background: var(--bg-secondary);
+}
+
+.detail-name {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+
+.detail-value {
+    padding: 0.5rem 1rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    word-break: break-all;
+}
+
+/* Selectable table rows */
+.data-table tbody tr {
+    cursor: pointer;
+}
+
+.data-table tbody tr.selected {
+    background: rgba(34, 197, 94, 0.15) !important;
+}
+
+.data-table tbody tr.selected td {
+    border-color: var(--success);
+}
+
 /* Alert / Warning Banner */
 .alert {
     padding: 1rem 1.25rem;
