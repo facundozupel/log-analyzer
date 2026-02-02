@@ -80,6 +80,7 @@
                 <!-- Tab Navigation -->
                 <nav class="tabs-nav">
                     <button class="tab-btn active" data-tab="overview">Overview</button>
+                    <button class="tab-btn" data-tab="log-lines">Log Lines</button>
                     <button class="tab-btn" data-tab="google-bots">Google Bots</button>
                     <button class="tab-btn" data-tab="ai-bots">AI Bots</button>
                     <button class="tab-btn" data-tab="all-bots">All Bots</button>
@@ -163,6 +164,48 @@
                     <div class="card">
                         <h3>Traffic by Date</h3>
                         <div id="traffic-date" class="bar-chart"></div>
+                    </div>
+                </div>
+
+                <!-- Log Lines Tab -->
+                <div id="tab-log-lines" class="tab-content">
+                    <div class="card">
+                        <div class="table-header">
+                            <h3>Parsed Log Lines</h3>
+                            <div class="table-controls">
+                                <input type="text" id="logs-search" class="search-input" placeholder="Search...">
+                                <select id="logs-bot-filter" class="filter-select">
+                                    <option value="">All Traffic</option>
+                                    <option value="bot">Bots Only</option>
+                                    <option value="human">Humans Only</option>
+                                </select>
+                                <button id="logs-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-container" style="max-height: 700px;">
+                            <table id="log-lines-table" class="data-table sortable">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="datetime">DateTime</th>
+                                        <th data-sort="method">Method</th>
+                                        <th data-sort="url">URL</th>
+                                        <th data-sort="statusCode" class="num">Status</th>
+                                        <th data-sort="bytesSent" class="num">Bytes</th>
+                                        <th data-sort="botName">Bot</th>
+                                        <th data-sort="ips">IP</th>
+                                        <th data-sort="domain">Domain</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="table-pagination">
+                            <span id="logs-table-info"></span>
+                            <div class="pagination-controls">
+                                <button id="logs-prev-btn" class="btn btn-secondary btn-sm">Prev</button>
+                                <button id="logs-next-btn" class="btn btn-secondary btn-sm">Next</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

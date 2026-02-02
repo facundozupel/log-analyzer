@@ -465,6 +465,7 @@ const sortState = {
     ai: { column: 'hits', direction: 'desc' },
     urls: { column: 'hits', direction: 'desc' },
     bots: { column: 'hits', direction: 'desc' },
+    logs: { column: 'datetime', direction: 'desc' },
 };
 
 // Pagination state
@@ -473,6 +474,7 @@ const pagination = {
     ai: { page: 0, pageSize: 50, data: [], filtered: [] },
     urls: { page: 0, pageSize: 50, data: [], filtered: [] },
     status: { page: 0, pageSize: 50, data: [], filtered: [] },
+    logs: { page: 0, pageSize: 100, data: [], filtered: [] },
 };
 
 // UI Code
@@ -620,6 +622,9 @@ function displayResults(stats) {
     // Overview tab
     displayOverview(stats);
 
+    // Log Lines tab
+    displayLogLines();
+
     // Google Bots tab
     displayGoogleBots(stats);
 
@@ -683,6 +688,109 @@ function displayOverview(stats) {
     renderBarChart('domains', stats.hitsByDomain, stats.totalRequests);
     renderBarChart('servers', stats.hitsByServer, stats.totalRequests);
     renderBarChart('traffic-date', stats.hitsByDate, stats.totalRequests, true);
+}
+
+function displayLogLines() {
+    // Use rawLogEntries directly
+    pagination.logs.data = rawLogEntries.map((entry, index) => ({
+        ...entry,
+        index,
+        ipsStr: entry.ips.join(', '),
+    }));
+    pagination.logs.filtered = [...pagination.logs.data];
+    pagination.logs.page = 0;
+
+    renderLogLinesTable();
+    setupTableSorting('log-lines-table', 'logs', renderLogLinesTable);
+
+    // Search handler
+    const searchInput = document.getElementById('logs-search');
+    const newSearchInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+    newSearchInput.addEventListener('input', (e) => {
+        filterLogLines(e.target.value, document.getElementById('logs-bot-filter').value);
+    });
+
+    // Bot filter handler
+    const filterSelect = document.getElementById('logs-bot-filter');
+    const newFilterSelect = filterSelect.cloneNode(true);
+    filterSelect.parentNode.replaceChild(newFilterSelect, filterSelect);
+    newFilterSelect.addEventListener('change', (e) => {
+        filterLogLines(document.getElementById('logs-search').value, e.target.value);
+    });
+
+    // Pagination
+    const prevBtn = document.getElementById('logs-prev-btn');
+    const newPrevBtn = prevBtn.cloneNode(true);
+    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+    newPrevBtn.addEventListener('click', () => {
+        if (pagination.logs.page > 0) {
+            pagination.logs.page--;
+            renderLogLinesTable();
+        }
+    });
+
+    const nextBtn = document.getElementById('logs-next-btn');
+    const newNextBtn = nextBtn.cloneNode(true);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+    newNextBtn.addEventListener('click', () => {
+        const maxPage = Math.ceil(pagination.logs.filtered.length / pagination.logs.pageSize) - 1;
+        if (pagination.logs.page < maxPage) {
+            pagination.logs.page++;
+            renderLogLinesTable();
+        }
+    });
+}
+
+function filterLogLines(search, botFilter) {
+    pagination.logs.filtered = pagination.logs.data.filter(row => {
+        const matchesSearch = !search ||
+            row.url.toLowerCase().includes(search.toLowerCase()) ||
+            row.ipsStr.toLowerCase().includes(search.toLowerCase()) ||
+            row.userAgent.toLowerCase().includes(search.toLowerCase()) ||
+            row.botName.toLowerCase().includes(search.toLowerCase());
+
+        let matchesBot = true;
+        if (botFilter === 'bot') matchesBot = row.isBot;
+        else if (botFilter === 'human') matchesBot = !row.isBot;
+
+        return matchesSearch && matchesBot;
+    });
+    pagination.logs.page = 0;
+    renderLogLinesTable();
+}
+
+function renderLogLinesTable() {
+    const { page, pageSize, filtered } = pagination.logs;
+    const start = page * pageSize;
+    const end = start + pageSize;
+    const pageData = filtered.slice(start, end);
+
+    const tbody = document.querySelector('#log-lines-table tbody');
+    tbody.innerHTML = pageData.map(row => {
+        const statusClass = row.statusCode >= 500 ? 's5xx' :
+                           row.statusCode >= 400 ? 's4xx' :
+                           row.statusCode >= 300 ? 's3xx' : 's2xx';
+        return `
+        <tr>
+            <td>${row.datetime}</td>
+            <td>${row.method}</td>
+            <td title="${row.url}">${row.url}</td>
+            <td class="num"><span class="status-pill ${statusClass}">${row.statusCode}</span></td>
+            <td class="num">${formatBytes(row.bytesSent)}</td>
+            <td>${row.isBot ? `<span class="bot-pill">${row.botName}</span>` : '<span style="color: var(--success);">Human</span>'}</td>
+            <td title="${row.ipsStr}">${row.ips[0]}</td>
+            <td>${row.domain}</td>
+        </tr>
+    `}).join('');
+
+    const total = filtered.length;
+    const showing = Math.min(end, total);
+    document.getElementById('logs-table-info').textContent =
+        `Showing ${start + 1}-${showing} of ${total} lines`;
+
+    document.getElementById('logs-prev-btn').disabled = page === 0;
+    document.getElementById('logs-next-btn').disabled = end >= total;
 }
 
 function displayGoogleBots(stats) {
@@ -1569,6 +1677,27 @@ function setupCSVExports() {
             Object.entries(row.statusCodes).map(([c, n]) => `${c}:${n}`).join('; ')
         ]);
         downloadCSV('all-urls.csv', headers, rows);
+    });
+
+    // Log Lines CSV
+    document.getElementById('logs-export-csv')?.addEventListener('click', () => {
+        const headers = ['DateTime', 'Method', 'URL', 'Status', 'Bytes', 'Is Bot', 'Bot Name', 'Bot Category', 'IPs', 'Domain', 'Server', 'User Agent', 'Referer'];
+        const rows = pagination.logs.filtered.map(row => [
+            row.datetime,
+            row.method,
+            row.url,
+            row.statusCode,
+            row.bytesSent,
+            row.isBot ? 'Yes' : 'No',
+            row.botName || '',
+            row.botCategory || '',
+            row.ips.join('; '),
+            row.domain,
+            row.server,
+            row.userAgent,
+            row.referer
+        ]);
+        downloadCSV('log-lines.csv', headers, rows);
     });
 
     // Status Codes CSV
