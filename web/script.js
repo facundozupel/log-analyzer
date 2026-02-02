@@ -709,7 +709,11 @@ function displayLogLines() {
     const newSearchInput = searchInput.cloneNode(true);
     searchInput.parentNode.replaceChild(newSearchInput, searchInput);
     newSearchInput.addEventListener('input', (e) => {
-        filterLogLines(e.target.value, document.getElementById('logs-bot-filter').value);
+        filterLogLines(
+            e.target.value,
+            document.getElementById('logs-bot-filter').value,
+            document.getElementById('logs-status-filter').value
+        );
     });
 
     // Bot filter handler
@@ -717,7 +721,23 @@ function displayLogLines() {
     const newFilterSelect = filterSelect.cloneNode(true);
     filterSelect.parentNode.replaceChild(newFilterSelect, filterSelect);
     newFilterSelect.addEventListener('change', (e) => {
-        filterLogLines(document.getElementById('logs-search').value, e.target.value);
+        filterLogLines(
+            document.getElementById('logs-search').value,
+            e.target.value,
+            document.getElementById('logs-status-filter').value
+        );
+    });
+
+    // Status code filter handler
+    const statusFilter = document.getElementById('logs-status-filter');
+    const newStatusFilter = statusFilter.cloneNode(true);
+    statusFilter.parentNode.replaceChild(newStatusFilter, statusFilter);
+    newStatusFilter.addEventListener('change', (e) => {
+        filterLogLines(
+            document.getElementById('logs-search').value,
+            document.getElementById('logs-bot-filter').value,
+            e.target.value
+        );
     });
 
     // Pagination
@@ -743,7 +763,7 @@ function displayLogLines() {
     });
 }
 
-function filterLogLines(search, botFilter) {
+function filterLogLines(search, botFilter, statusFilter) {
     pagination.logs.filtered = pagination.logs.data.filter(row => {
         const matchesSearch = !search ||
             row.url.toLowerCase().includes(search.toLowerCase()) ||
@@ -755,7 +775,16 @@ function filterLogLines(search, botFilter) {
         if (botFilter === 'bot') matchesBot = row.isBot;
         else if (botFilter === 'human') matchesBot = !row.isBot;
 
-        return matchesSearch && matchesBot;
+        let matchesStatus = true;
+        if (statusFilter) {
+            const code = row.statusCode;
+            if (statusFilter === '2xx') matchesStatus = code >= 200 && code < 300;
+            else if (statusFilter === '3xx') matchesStatus = code >= 300 && code < 400;
+            else if (statusFilter === '4xx') matchesStatus = code >= 400 && code < 500;
+            else if (statusFilter === '5xx') matchesStatus = code >= 500 && code < 600;
+        }
+
+        return matchesSearch && matchesBot && matchesStatus;
     });
     pagination.logs.page = 0;
     renderLogLinesTable();
