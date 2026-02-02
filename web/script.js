@@ -67,7 +67,8 @@ const BOT_PATTERNS = [
 ];
 
 // Log line regex - supports optional extra ID field at the end
-const LOG_REGEX = /^\[([^\]]*)\]:::\[([^\]]*)\]:::([^\s]+)\s+-\s+-\s+\[([^\]]+)\]\s+"(\w+)\s+([^\s]+)\s+[^"]*"\s+(\d+)\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"(?:\s+"[^"]*")?/;
+// IP field can have spaces after commas: "66.249.72.164, 172.71.1.151"
+const LOG_REGEX = /^\[([^\]]*)\]:::\[([^\]]*)\]:::([0-9a-fA-F:., ]+)\s+-\s+-\s+\[([^\]]+)\]\s+"(\w+)\s+([^\s]+)\s+[^"]*"\s+(\d+)\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"(?:\s+"[^"]*")?/;
 
 function parseLogLine(line) {
     const match = line.match(LOG_REGEX);
