@@ -707,6 +707,46 @@ footer {
     font-size: 0.875rem;
 }
 
+/* Alert / Warning Banner */
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+}
+
+.alert-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid var(--warning);
+    color: var(--warning);
+}
+
+.alert strong {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.alert details {
+    margin-top: 0.75rem;
+}
+
+.alert summary {
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.alert summary:hover {
+    color: var(--text-primary);
+}
+
+.alert pre {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    background: rgba(0, 0, 0, 0.3);
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
 /* Utilities */
 .hidden {
     display: none !important;

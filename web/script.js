@@ -66,8 +66,8 @@ const BOT_PATTERNS = [
     { pattern: /spider/i, name: 'Unknown Spider', category: 'Other' },
 ];
 
-// Log line regex
-const LOG_REGEX = /^\[([^\]]*)\]:::\[([^\]]*)\]:::([^\s]+)\s+-\s+-\s+\[([^\]]+)\]\s+"(\w+)\s+([^\s]+)\s+[^"]*"\s+(\d+)\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/;
+// Log line regex - supports optional extra ID field at the end
+const LOG_REGEX = /^\[([^\]]*)\]:::\[([^\]]*)\]:::([^\s]+)\s+-\s+-\s+\[([^\]]+)\]\s+"(\w+)\s+([^\s]+)\s+[^"]*"\s+(\d+)\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"(?:\s+"[^"]*")?/;
 
 function parseLogLine(line) {
     const match = line.match(LOG_REGEX);
@@ -129,6 +129,11 @@ function parseLogs(content, collectEntries = false) {
         googleBotUrls: {},  // { url: { hits, totalBytes, statusCodes: {}, firstSeen, lastSeen, bots: Set } }
         aiBotUrls: {},      // Same structure
         urlStatusCodes: {}, // { url: { hits, statusCodes: {}, bots: Set, isBot } }
+        // Parsing stats
+        totalLines: 0,
+        parsedLines: 0,
+        failedLines: 0,
+        failedExamples: [],  // Store first few failed lines for debugging
     };
 
     const entries = [];
@@ -137,8 +142,17 @@ function parseLogs(content, collectEntries = false) {
     for (const line of lines) {
         if (!line.trim()) continue;
 
+        stats.totalLines++;
         const entry = parseLogLine(line);
-        if (!entry) continue;
+        if (!entry) {
+            stats.failedLines++;
+            // Store first 5 failed lines for debugging
+            if (stats.failedExamples.length < 5) {
+                stats.failedExamples.push(line.substring(0, 200));
+            }
+            continue;
+        }
+        stats.parsedLines++;
 
         detectBot(entry);
 
@@ -317,6 +331,11 @@ function mergeStats(stats1, stats2) {
         googleBotUrls: {},
         aiBotUrls: {},
         urlStatusCodes: {},
+        // Parsing stats
+        totalLines: (stats1.totalLines || 0) + (stats2.totalLines || 0),
+        parsedLines: (stats1.parsedLines || 0) + (stats2.parsedLines || 0),
+        failedLines: (stats1.failedLines || 0) + (stats2.failedLines || 0),
+        failedExamples: [...(stats1.failedExamples || []), ...(stats2.failedExamples || [])].slice(0, 5),
     };
 
     // Merge status distribution
@@ -633,6 +652,20 @@ function displayOverview(stats) {
     const botPercentage = stats.totalRequests > 0
         ? (stats.botRequests / stats.totalRequests) * 100
         : 0;
+
+    // Show parsing warning if there are failed lines
+    const warningEl = document.getElementById('parsing-warning');
+    const statsEl = document.getElementById('parsing-stats');
+    const examplesEl = document.getElementById('failed-examples');
+
+    if (stats.failedLines && stats.failedLines > 0) {
+        const failedPercent = ((stats.failedLines / stats.totalLines) * 100).toFixed(1);
+        statsEl.textContent = `${formatNumber(stats.failedLines)} of ${formatNumber(stats.totalLines)} lines (${failedPercent}%) could not be parsed. They may have a different log format.`;
+        examplesEl.textContent = (stats.failedExamples || []).join('\n\n');
+        warningEl.classList.remove('hidden');
+    } else {
+        warningEl.classList.add('hidden');
+    }
 
     document.getElementById('total-requests').textContent = formatNumber(stats.totalRequests);
     document.getElementById('unique-urls').textContent = formatNumber(stats.uniqueUrls.size);

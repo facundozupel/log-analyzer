@@ -89,6 +89,16 @@
 
                 <!-- Overview Tab -->
                 <div id="tab-overview" class="tab-content active">
+                    <!-- Parsing Warning Banner (hidden by default) -->
+                    <div id="parsing-warning" class="alert alert-warning hidden">
+                        <strong>Parsing Issues:</strong>
+                        <span id="parsing-stats"></span>
+                        <details>
+                            <summary>Show failed line examples</summary>
+                            <pre id="failed-examples"></pre>
+                        </details>
+                    </div>
+
                     <div class="stats-grid">
                         <div class="stat-card">
                             <span class="stat-value" id="total-requests">-</span>
