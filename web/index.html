@@ -43,7 +43,11 @@
 
             <section id="loading" class="card hidden">
                 <div class="loading-spinner"></div>
-                <p>Processing logs...</p>
+                <p id="loading-text">Processing logs...</p>
+                <div id="loading-progress" class="progress-bar hidden">
+                    <div id="loading-progress-fill" class="progress-fill"></div>
+                </div>
+                <p id="loading-detail" class="loading-detail"></p>
             </section>
 
             <section id="results" class="hidden">
@@ -80,7 +84,6 @@
                 <!-- Tab Navigation -->
                 <nav class="tabs-nav">
                     <button class="tab-btn active" data-tab="overview">Overview</button>
-                    <button class="tab-btn" data-tab="log-lines">Log Lines</button>
                     <button class="tab-btn" data-tab="google-bots">Google Bots</button>
                     <button class="tab-btn" data-tab="ai-bots">AI Bots</button>
                     <button class="tab-btn" data-tab="all-bots">All Bots</button>
@@ -167,65 +170,6 @@
                     </div>
                 </div>
 
-                <!-- Log Lines Tab -->
-                <div id="tab-log-lines" class="tab-content">
-                    <div class="card">
-                        <div class="table-header">
-                            <h3>Parsed Log Lines</h3>
-                            <div class="table-controls">
-                                <input type="text" id="logs-search" class="search-input" placeholder="Search...">
-                                <select id="logs-bot-filter" class="filter-select">
-                                    <option value="">All Traffic</option>
-                                    <option value="bot">Bots Only</option>
-                                    <option value="human">Humans Only</option>
-                                </select>
-                                <select id="logs-status-filter" class="filter-select">
-                                    <option value="">All Status Codes</option>
-                                    <option value="2xx">2xx Success</option>
-                                    <option value="3xx">3xx Redirect</option>
-                                    <option value="4xx">4xx Client Error</option>
-                                    <option value="5xx">5xx Server Error</option>
-                                </select>
-                                <button id="logs-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
-                            </div>
-                        </div>
-                        <div class="table-container" style="max-height: 700px;">
-                            <table id="log-lines-table" class="data-table sortable">
-                                <thead>
-                                    <tr>
-                                        <th data-sort="datetime">DateTime</th>
-                                        <th data-sort="method">Method</th>
-                                        <th data-sort="url">URL</th>
-                                        <th data-sort="statusCode" class="num">Status</th>
-                                        <th data-sort="bytesSent" class="num">Bytes</th>
-                                        <th data-sort="botName">Bot</th>
-                                        <th data-sort="ips">IP</th>
-                                        <th data-sort="domain">Domain</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div class="table-pagination">
-                            <span id="logs-table-info"></span>
-                            <div class="pagination-controls">
-                                <button id="logs-prev-btn" class="btn btn-secondary btn-sm">Prev</button>
-                                <button id="logs-next-btn" class="btn btn-secondary btn-sm">Next</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Detail Panel -->
-                    <div id="log-detail-panel" class="card detail-panel hidden">
-                        <div class="detail-header">
-                            <h3>Log Entry Details</h3>
-                            <button id="close-detail-btn" class="btn btn-secondary btn-sm">Close</button>
-                        </div>
-                        <div class="detail-grid" id="log-detail-content">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Google Bots Tab -->
                 <div id="tab-google-bots" class="tab-content">
@@ -378,6 +322,20 @@
                             <h3>All URLs</h3>
                             <div class="table-controls">
                                 <input type="text" id="urls-search" class="search-input" placeholder="Search URLs...">
+                                <select id="urls-status-filter" class="filter-select">
+                                    <option value="">All Status</option>
+                                    <option value="2xx">2xx Success</option>
+                                    <option value="3xx">3xx Redirect</option>
+                                    <option value="4xx">4xx Client Error</option>
+                                    <option value="404">404 Not Found</option>
+                                    <option value="5xx">5xx Server Error</option>
+                                </select>
+                                <select id="urls-bot-filter" class="filter-select">
+                                    <option value="">All Traffic</option>
+                                    <option value="bot">Bot Only</option>
+                                    <option value="human">Human Only</option>
+                                    <option value="mixed">Mixed (Bot + Human)</option>
+                                </select>
                                 <button id="urls-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
                             </div>
                         </div>
@@ -471,6 +429,6 @@
         </footer>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

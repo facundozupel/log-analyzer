@@ -450,7 +450,9 @@ function mergeStats(stats1, stats2) {
 
 // Store processed stats globally for filtering/sorting
 let globalStats = null;
-let rawLogEntries = []; // Store raw entries for filtering
+let rawLogEntries = []; // Store raw entries for filtering (loaded on-demand)
+let storedFiles = []; // Store File objects for on-demand re-parsing
+let totalEntryCount = 0; // Total entries across all files
 
 // Global filters state
 const globalFilters = {
@@ -466,7 +468,6 @@ const sortState = {
     ai: { column: 'hits', direction: 'desc' },
     urls: { column: 'hits', direction: 'desc' },
     bots: { column: 'hits', direction: 'desc' },
-    logs: { column: 'datetime', direction: 'desc' },
 };
 
 // Pagination state
@@ -475,7 +476,6 @@ const pagination = {
     ai: { page: 0, pageSize: 50, data: [], filtered: [] },
     urls: { page: 0, pageSize: 50, data: [], filtered: [] },
     status: { page: 0, pageSize: 50, data: [], filtered: [] },
-    logs: { page: 0, pageSize: 100, data: [], filtered: [] },
 };
 
 // UI Code
@@ -589,42 +589,236 @@ analyzeBtn.addEventListener('click', async () => {
     loadingSection.classList.remove('hidden');
     resultsSection.classList.add('hidden');
 
+    // Get loading UI elements
+    const loadingText = document.getElementById('loading-text');
+    const loadingDetail = document.getElementById('loading-detail');
+    const loadingProgress = document.getElementById('loading-progress');
+    const loadingProgressFill = document.getElementById('loading-progress-fill');
+
     try {
-        let combinedStats = null;
-        rawLogEntries = [];
-
-        for (const file of selectedFiles) {
-            const content = await file.text();
-            const result = parseLogs(content, true);
-
-            if (combinedStats === null) {
-                combinedStats = result.stats;
-            } else {
-                combinedStats = mergeStats(combinedStats, result.stats);
-            }
-            rawLogEntries = rawLogEntries.concat(result.entries);
+        // Check if Web Workers are supported
+        if (typeof Worker !== 'undefined') {
+            await parseWithWorker(selectedFiles, { loadingText, loadingDetail, loadingProgress, loadingProgressFill });
+        } else {
+            // Fallback to sync parsing (may crash on large files)
+            await parseSynchronously(selectedFiles, { loadingText, loadingDetail });
         }
-
-        globalStats = combinedStats;
-        initializeGlobalFilters(combinedStats);
-        displayResults(combinedStats);
     } catch (error) {
         console.error('Error parsing logs:', error);
         alert('Error parsing logs: ' + error.message);
         uploadSection.classList.remove('hidden');
-    } finally {
         loadingSection.classList.add('hidden');
     }
 });
+
+// Parse using Web Worker with streaming (prevents memory crashes)
+async function parseWithWorker(files, ui) {
+    const { loadingText, loadingDetail, loadingProgress, loadingProgressFill } = ui;
+
+    // Store files for on-demand re-parsing in Log Lines tab
+    storedFiles = Array.from(files);
+    totalEntryCount = 0;
+    rawLogEntries = []; // Will be loaded on-demand
+
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
+
+    return new Promise((resolve, reject) => {
+        const worker = new Worker('parser-worker.js');
+        let combinedStats = null;
+        let filesProcessed = 0;
+        const totalFiles = files.length;
+        let currentFileIndex = 0;
+        let currentFile = null;
+        let currentOffset = 0;
+        let remainder = '';
+
+        // Show progress bar
+        loadingProgress.classList.remove('hidden');
+
+        worker.onmessage = async function(e) {
+            const { type, fileIndex, stats, linesProcessed, remainder: newRemainder, isLastChunk, error } = e.data;
+
+            if (type === 'ready') {
+                // Worker is ready, start processing
+                processNextChunk();
+            }
+            else if (type === 'chunk-done') {
+                remainder = newRemainder || '';
+
+                // Update progress
+                const fileProgress = currentFile ? (currentOffset / currentFile.size) * 100 : 0;
+                const overallProgress = ((fileIndex / totalFiles) + (fileProgress / 100 / totalFiles)) * 100;
+                loadingProgressFill.style.width = `${overallProgress}%`;
+                loadingDetail.textContent = `${linesProcessed.toLocaleString()} lines processed`;
+
+                if (!isLastChunk) {
+                    // Process next chunk
+                    processNextChunk();
+                }
+            }
+            else if (type === 'file-done') {
+                // Convert arrays back to Sets for compatibility
+                convertStatsToSets(stats);
+
+                // Track total entry count
+                totalEntryCount += stats.entryCount || 0;
+
+                // Merge stats
+                if (combinedStats === null) {
+                    combinedStats = stats;
+                } else {
+                    combinedStats = mergeStats(combinedStats, stats);
+                }
+
+                filesProcessed++;
+                loadingText.textContent = `Processed ${filesProcessed}/${totalFiles} files`;
+                loadingDetail.textContent = `${totalEntryCount.toLocaleString()} entries found`;
+                loadingProgressFill.style.width = `${(filesProcessed / totalFiles) * 100}%`;
+
+                // Process next file or finish
+                currentFileIndex++;
+                if (currentFileIndex < totalFiles) {
+                    startNextFile();
+                } else {
+                    worker.terminate();
+                    loadingProgress.classList.add('hidden');
+                    finishProcessing(combinedStats);
+                    resolve();
+                }
+            }
+            else if (type === 'error') {
+                worker.terminate();
+                loadingProgress.classList.add('hidden');
+                reject(new Error(error));
+            }
+        };
+
+        worker.onerror = function(error) {
+            worker.terminate();
+            loadingProgress.classList.add('hidden');
+            reject(error);
+        };
+
+        function startNextFile() {
+            currentFile = files[currentFileIndex];
+            currentOffset = 0;
+            remainder = '';
+
+            loadingText.textContent = `Processing file ${currentFileIndex + 1}/${totalFiles}...`;
+            loadingDetail.textContent = currentFile.name;
+
+            // Reset worker stats for new file
+            worker.postMessage({ type: 'reset-stats' });
+        }
+
+        async function processNextChunk() {
+            if (!currentFile) return;
+
+            const isLastChunk = currentOffset + CHUNK_SIZE >= currentFile.size;
+            const end = Math.min(currentOffset + CHUNK_SIZE, currentFile.size);
+            const blob = currentFile.slice(currentOffset, end);
+
+            try {
+                const text = await blob.text();
+                currentOffset = end;
+
+                worker.postMessage({
+                    type: 'chunk',
+                    chunk: text,
+                    remainder: remainder,
+                    isFirstChunk: currentOffset === CHUNK_SIZE || currentOffset === currentFile.size,
+                    isLastChunk,
+                    fileIndex: currentFileIndex,
+                    totalFiles
+                });
+            } catch (err) {
+                worker.terminate();
+                loadingProgress.classList.add('hidden');
+                reject(err);
+            }
+        }
+
+        // Initialize worker and start
+        worker.postMessage({ type: 'init' });
+        startNextFile();
+    });
+}
+
+// Convert arrays back to Sets after receiving from worker
+function convertStatsToSets(stats) {
+    if (stats.uniqueUrls) stats.uniqueUrls = new Set(stats.uniqueUrls);
+    if (stats.uniqueIps) stats.uniqueIps = new Set(stats.uniqueIps);
+
+    for (const botName in stats.hitsByBot) {
+        if (stats.hitsByBot[botName].uniqueUrls) {
+            stats.hitsByBot[botName].uniqueUrls = new Set(stats.hitsByBot[botName].uniqueUrls);
+        }
+    }
+
+    for (const url in stats.urlStatusCodes) {
+        if (stats.urlStatusCodes[url].bots) {
+            stats.urlStatusCodes[url].bots = new Set(stats.urlStatusCodes[url].bots);
+        }
+    }
+
+    for (const url in stats.googleBotUrls) {
+        if (stats.googleBotUrls[url].bots) {
+            stats.googleBotUrls[url].bots = new Set(stats.googleBotUrls[url].bots);
+        }
+    }
+    for (const url in stats.aiBotUrls) {
+        if (stats.aiBotUrls[url].bots) {
+            stats.aiBotUrls[url].bots = new Set(stats.aiBotUrls[url].bots);
+        }
+    }
+}
+
+// Fallback synchronous parsing (for browsers without Worker support)
+async function parseSynchronously(files, ui) {
+    const { loadingText, loadingDetail } = ui;
+
+    // Store files for on-demand re-parsing
+    storedFiles = Array.from(files);
+    totalEntryCount = 0;
+    rawLogEntries = [];
+
+    let combinedStats = null;
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        loadingText.textContent = `Processing file ${i + 1}/${files.length}...`;
+        loadingDetail.textContent = file.name;
+
+        // Small delay to let UI update
+        await new Promise(r => setTimeout(r, 10));
+
+        const content = await file.text();
+        // Parse for stats only, don't collect entries
+        const result = parseLogs(content, false);
+
+        if (combinedStats === null) {
+            combinedStats = result;
+        } else {
+            combinedStats = mergeStats(combinedStats, result);
+        }
+        totalEntryCount += result.parsedLines || 0;
+    }
+
+    finishProcessing(combinedStats);
+}
+
+function finishProcessing(stats) {
+    globalStats = stats;
+    initializeGlobalFilters(stats);
+    displayResults(stats);
+    loadingSection.classList.add('hidden');
+}
 
 function displayResults(stats) {
     resultsSection.classList.remove('hidden');
 
     // Overview tab
     displayOverview(stats);
-
-    // Log Lines tab
-    displayLogLines();
 
     // Google Bots tab
     displayGoogleBots(stats);
@@ -691,210 +885,7 @@ function displayOverview(stats) {
     renderBarChart('traffic-date', stats.hitsByDate, stats.totalRequests, true);
 }
 
-function displayLogLines() {
-    // Use rawLogEntries directly
-    pagination.logs.data = rawLogEntries.map((entry, index) => ({
-        ...entry,
-        index,
-        ipsStr: entry.ips.join(', '),
-    }));
-    pagination.logs.filtered = [...pagination.logs.data];
-    pagination.logs.page = 0;
 
-    renderLogLinesTable();
-    setupTableSorting('log-lines-table', 'logs', renderLogLinesTable);
-
-    // Search handler
-    const searchInput = document.getElementById('logs-search');
-    const newSearchInput = searchInput.cloneNode(true);
-    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
-    newSearchInput.addEventListener('input', (e) => {
-        filterLogLines(
-            e.target.value,
-            document.getElementById('logs-bot-filter').value,
-            document.getElementById('logs-status-filter').value
-        );
-    });
-
-    // Bot filter handler
-    const filterSelect = document.getElementById('logs-bot-filter');
-    const newFilterSelect = filterSelect.cloneNode(true);
-    filterSelect.parentNode.replaceChild(newFilterSelect, filterSelect);
-    newFilterSelect.addEventListener('change', (e) => {
-        filterLogLines(
-            document.getElementById('logs-search').value,
-            e.target.value,
-            document.getElementById('logs-status-filter').value
-        );
-    });
-
-    // Status code filter handler
-    const statusFilter = document.getElementById('logs-status-filter');
-    const newStatusFilter = statusFilter.cloneNode(true);
-    statusFilter.parentNode.replaceChild(newStatusFilter, statusFilter);
-    newStatusFilter.addEventListener('change', (e) => {
-        filterLogLines(
-            document.getElementById('logs-search').value,
-            document.getElementById('logs-bot-filter').value,
-            e.target.value
-        );
-    });
-
-    // Pagination
-    const prevBtn = document.getElementById('logs-prev-btn');
-    const newPrevBtn = prevBtn.cloneNode(true);
-    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
-    newPrevBtn.addEventListener('click', () => {
-        if (pagination.logs.page > 0) {
-            pagination.logs.page--;
-            renderLogLinesTable();
-        }
-    });
-
-    const nextBtn = document.getElementById('logs-next-btn');
-    const newNextBtn = nextBtn.cloneNode(true);
-    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
-    newNextBtn.addEventListener('click', () => {
-        const maxPage = Math.ceil(pagination.logs.filtered.length / pagination.logs.pageSize) - 1;
-        if (pagination.logs.page < maxPage) {
-            pagination.logs.page++;
-            renderLogLinesTable();
-        }
-    });
-}
-
-function filterLogLines(search, botFilter, statusFilter) {
-    pagination.logs.filtered = pagination.logs.data.filter(row => {
-        const matchesSearch = !search ||
-            row.url.toLowerCase().includes(search.toLowerCase()) ||
-            row.ipsStr.toLowerCase().includes(search.toLowerCase()) ||
-            row.userAgent.toLowerCase().includes(search.toLowerCase()) ||
-            row.botName.toLowerCase().includes(search.toLowerCase());
-
-        let matchesBot = true;
-        if (botFilter === 'bot') matchesBot = row.isBot;
-        else if (botFilter === 'human') matchesBot = !row.isBot;
-
-        let matchesStatus = true;
-        if (statusFilter) {
-            const code = row.statusCode;
-            if (statusFilter === '2xx') matchesStatus = code >= 200 && code < 300;
-            else if (statusFilter === '3xx') matchesStatus = code >= 300 && code < 400;
-            else if (statusFilter === '4xx') matchesStatus = code >= 400 && code < 500;
-            else if (statusFilter === '5xx') matchesStatus = code >= 500 && code < 600;
-        }
-
-        return matchesSearch && matchesBot && matchesStatus;
-    });
-    pagination.logs.page = 0;
-    renderLogLinesTable();
-}
-
-let selectedLogIndex = null;
-
-function renderLogLinesTable() {
-    const { page, pageSize, filtered } = pagination.logs;
-    const start = page * pageSize;
-    const end = start + pageSize;
-    const pageData = filtered.slice(start, end);
-
-    const tbody = document.querySelector('#log-lines-table tbody');
-    tbody.innerHTML = pageData.map((row, idx) => {
-        const globalIdx = start + idx;
-        const statusClass = row.statusCode >= 500 ? 's5xx' :
-                           row.statusCode >= 400 ? 's4xx' :
-                           row.statusCode >= 300 ? 's3xx' : 's2xx';
-        const selectedClass = selectedLogIndex === globalIdx ? 'selected' : '';
-        return `
-        <tr class="${selectedClass}" data-index="${globalIdx}">
-            <td>${row.datetime}</td>
-            <td>${row.method}</td>
-            <td title="${row.url}">${row.url}</td>
-            <td class="num"><span class="status-pill ${statusClass}">${row.statusCode}</span></td>
-            <td class="num">${formatBytes(row.bytesSent)}</td>
-            <td>${row.isBot ? `<span class="bot-pill">${row.botName}</span>` : '<span style="color: var(--success);">Human</span>'}</td>
-            <td title="${row.ipsStr}">${row.ips[0]}</td>
-            <td>${row.domain}</td>
-        </tr>
-    `}).join('');
-
-    // Add click handlers to rows
-    tbody.querySelectorAll('tr').forEach(tr => {
-        tr.addEventListener('click', () => {
-            const idx = parseInt(tr.dataset.index, 10);
-            selectLogRow(idx);
-        });
-    });
-
-    const total = filtered.length;
-    const showing = Math.min(end, total);
-    document.getElementById('logs-table-info').textContent =
-        `Showing ${start + 1}-${showing} of ${total} lines`;
-
-    document.getElementById('logs-prev-btn').disabled = page === 0;
-    document.getElementById('logs-next-btn').disabled = end >= total;
-}
-
-function selectLogRow(index) {
-    selectedLogIndex = index;
-    const entry = pagination.logs.filtered[index];
-
-    // Update selected row styling
-    document.querySelectorAll('#log-lines-table tbody tr').forEach(tr => {
-        tr.classList.remove('selected');
-        if (parseInt(tr.dataset.index, 10) === index) {
-            tr.classList.add('selected');
-        }
-    });
-
-    // Show detail panel
-    showLogDetail(entry);
-}
-
-function showLogDetail(entry) {
-    const panel = document.getElementById('log-detail-panel');
-    const content = document.getElementById('log-detail-content');
-
-    const fields = [
-        ['Row', selectedLogIndex + 1],
-        ['DateTime', entry.datetime],
-        ['Method', entry.method],
-        ['URL', entry.url],
-        ['Status Code', entry.statusCode],
-        ['Bytes Sent', `${entry.bytesSent} (${formatBytes(entry.bytesSent)})`],
-        ['Is Bot', entry.isBot ? 'Yes' : 'No'],
-        ['Bot Name', entry.botName || '-'],
-        ['Bot Category', entry.botCategory || '-'],
-        ['Is Google Bot', entry.isGoogle ? 'Yes' : 'No'],
-        ['Is AI Bot', entry.isAI ? 'Yes' : 'No'],
-        ['IP Addresses', entry.ips.join(', ')],
-        ['Domain', entry.domain],
-        ['Server', entry.server],
-        ['Referer', entry.referer || '-'],
-        ['User Agent', entry.userAgent],
-    ];
-
-    content.innerHTML = fields.map(([name, value]) => `
-        <div class="detail-row">
-            <div class="detail-name">${name}</div>
-            <div class="detail-value">${value}</div>
-        </div>
-    `).join('');
-
-    panel.classList.remove('hidden');
-
-    // Setup close button
-    const closeBtn = document.getElementById('close-detail-btn');
-    const newCloseBtn = closeBtn.cloneNode(true);
-    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-    newCloseBtn.addEventListener('click', () => {
-        panel.classList.add('hidden');
-        selectedLogIndex = null;
-        document.querySelectorAll('#log-lines-table tbody tr').forEach(tr => {
-            tr.classList.remove('selected');
-        });
-    });
-}
 
 function displayGoogleBots(stats) {
     // Calculate Google stats
@@ -1191,18 +1182,55 @@ function displayUrls(stats) {
     renderUrlsTable();
     setupTableSorting('top-urls', 'urls', renderUrlsTable);
 
-    // Search handler (clone to remove old listeners)
+    // Filter function
+    function applyUrlFilters() {
+        const search = document.getElementById('urls-search').value.toLowerCase();
+        const statusFilter = document.getElementById('urls-status-filter').value;
+        const botFilter = document.getElementById('urls-bot-filter').value;
+
+        pagination.urls.filtered = pagination.urls.data.filter(row => {
+            // Search filter
+            if (search && !row.url.toLowerCase().includes(search)) return false;
+
+            // Status code filter
+            if (statusFilter) {
+                const codes = Object.keys(row.statusCodes).map(c => parseInt(c));
+                if (statusFilter === '2xx' && !codes.some(c => c >= 200 && c < 300)) return false;
+                if (statusFilter === '3xx' && !codes.some(c => c >= 300 && c < 400)) return false;
+                if (statusFilter === '4xx' && !codes.some(c => c >= 400 && c < 500)) return false;
+                if (statusFilter === '404' && !codes.includes(404)) return false;
+                if (statusFilter === '5xx' && !codes.some(c => c >= 500)) return false;
+            }
+
+            // Bot filter
+            if (botFilter === 'bot' && row.botHits === 0) return false;
+            if (botFilter === 'human' && row.humanHits === 0) return false;
+            if (botFilter === 'mixed' && (row.botHits === 0 || row.humanHits === 0)) return false;
+
+            return true;
+        });
+
+        pagination.urls.page = 0;
+        renderUrlsTable();
+    }
+
+    // Search handler
     const searchInput = document.getElementById('urls-search');
     const newSearchInput = searchInput.cloneNode(true);
     searchInput.parentNode.replaceChild(newSearchInput, searchInput);
-    newSearchInput.addEventListener('input', (e) => {
-        const search = e.target.value.toLowerCase();
-        pagination.urls.filtered = pagination.urls.data.filter(row =>
-            row.url.toLowerCase().includes(search)
-        );
-        pagination.urls.page = 0;
-        renderUrlsTable();
-    });
+    newSearchInput.addEventListener('input', applyUrlFilters);
+
+    // Status filter handler
+    const statusFilter = document.getElementById('urls-status-filter');
+    const newStatusFilter = statusFilter.cloneNode(true);
+    statusFilter.parentNode.replaceChild(newStatusFilter, statusFilter);
+    newStatusFilter.addEventListener('change', applyUrlFilters);
+
+    // Bot filter handler
+    const botFilter = document.getElementById('urls-bot-filter');
+    const newBotFilter = botFilter.cloneNode(true);
+    botFilter.parentNode.replaceChild(newBotFilter, botFilter);
+    newBotFilter.addEventListener('change', applyUrlFilters);
 
     // Pagination
     const prevBtn = document.getElementById('urls-prev-btn');
@@ -1461,6 +1489,12 @@ function applyGlobalFilters() {
     globalFilters.dateEnd = document.getElementById('filter-date-end').value || null;
     globalFilters.domain = document.getElementById('filter-domain').value;
     globalFilters.server = document.getElementById('filter-server').value;
+
+    // Check if raw entries are loaded
+    if (rawLogEntries.length === 0) {
+        alert('Global filters require raw log entries which are not loaded for memory efficiency with large files.');
+        return;
+    }
 
     // Filter raw entries and rebuild stats
     const filteredEntries = rawLogEntries.filter(entry => {
@@ -1780,27 +1814,6 @@ function setupCSVExports() {
             Object.entries(row.statusCodes).map(([c, n]) => `${c}:${n}`).join('; ')
         ]);
         downloadCSV('all-urls.csv', headers, rows);
-    });
-
-    // Log Lines CSV
-    document.getElementById('logs-export-csv')?.addEventListener('click', () => {
-        const headers = ['DateTime', 'Method', 'URL', 'Status', 'Bytes', 'Is Bot', 'Bot Name', 'Bot Category', 'IPs', 'Domain', 'Server', 'User Agent', 'Referer'];
-        const rows = pagination.logs.filtered.map(row => [
-            row.datetime,
-            row.method,
-            row.url,
-            row.statusCode,
-            row.bytesSent,
-            row.isBot ? 'Yes' : 'No',
-            row.botName || '',
-            row.botCategory || '',
-            row.ips.join('; '),
-            row.domain,
-            row.server,
-            row.userAgent,
-            row.referer
-        ]);
-        downloadCSV('log-lines.csv', headers, rows);
     });
 
     // Status Codes CSV
