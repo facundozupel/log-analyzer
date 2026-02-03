@@ -31,7 +31,8 @@ log_analyzer/
 ├── web/                  # Web GUI (deployed to Vercel)
 │   ├── index.html        # Drag & drop interface
 │   ├── style.css         # Dark theme
-│   ├── script.js         # JS parser (mirrors Rust logic)
+│   ├── script.js         # Main UI + streaming orchestration
+│   ├── parser-worker.js  # Web Worker for streaming parsing
 │   └── package.json
 │
 ├── vercel.json           # Vercel config (serves web/)
@@ -76,3 +77,14 @@ vercel --prod
 - Googlebot IP verification
 - Stats: URLs, IPs, status codes, methods, bots by category, traffic by date
 - JSON export
+
+## Web Architecture (Large File Support)
+
+The web GUI uses **streaming** to handle large log files without crashing the browser:
+
+1. **Web Worker** (`parser-worker.js`): Parsing runs in a separate thread
+2. **Chunk processing**: Files are read in 2MB chunks via `file.slice()`
+3. **Incremental stats**: Statistics accumulate without storing individual entries
+4. **On-demand loading**: "Log Lines" tab loads entries only when requested
+
+This allows processing multiple large files (100MB+) without memory issues.

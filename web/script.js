@@ -552,6 +552,36 @@ function formatNumber(num) {
     return num.toLocaleString();
 }
 
+// Create a URL matcher that supports both plain text and regex
+// Regex format: /pattern/ or /pattern/i for case-insensitive
+function createUrlMatcher(search) {
+    if (!search) return null;
+
+    // Check if it's a regex pattern: /pattern/ or /pattern/flags
+    const regexMatch = search.match(/^\/(.+)\/([gimsuy]*)$/);
+    if (regexMatch) {
+        try {
+            const pattern = regexMatch[1];
+            const flags = regexMatch[2] || '';
+            return { type: 'regex', regex: new RegExp(pattern, flags) };
+        } catch (e) {
+            // Invalid regex, fall back to text search
+            return { type: 'text', search: search.toLowerCase() };
+        }
+    }
+
+    // Plain text search (case-insensitive)
+    return { type: 'text', search: search.toLowerCase() };
+}
+
+function matchUrl(url, matcher) {
+    if (!matcher) return true;
+    if (matcher.type === 'regex') {
+        return matcher.regex.test(url);
+    }
+    return url.toLowerCase().includes(matcher.search);
+}
+
 function updateFileList() {
     if (selectedFiles.length === 0) {
         fileList.classList.add('hidden');
@@ -979,8 +1009,9 @@ function displayGoogleBots(stats) {
 }
 
 function filterGoogleTable(search, botFilter) {
+    const matcher = createUrlMatcher(search);
     pagination.google.filtered = pagination.google.data.filter(row => {
-        const matchesSearch = !search || row.url.toLowerCase().includes(search.toLowerCase());
+        const matchesSearch = matchUrl(row.url, matcher);
         const matchesBot = !botFilter || row.bots.includes(botFilter);
         return matchesSearch && matchesBot;
     });
@@ -1098,8 +1129,9 @@ function displayAIBots(stats) {
 }
 
 function filterAITable(search, botFilter) {
+    const matcher = createUrlMatcher(search);
     pagination.ai.filtered = pagination.ai.data.filter(row => {
-        const matchesSearch = !search || row.url.toLowerCase().includes(search.toLowerCase());
+        const matchesSearch = matchUrl(row.url, matcher);
         const matchesBot = !botFilter || row.bots.includes(botFilter);
         return matchesSearch && matchesBot;
     });
@@ -1184,13 +1216,14 @@ function displayUrls(stats) {
 
     // Filter function
     function applyUrlFilters() {
-        const search = document.getElementById('urls-search').value.toLowerCase();
+        const search = document.getElementById('urls-search').value;
         const statusFilter = document.getElementById('urls-status-filter').value;
         const botFilter = document.getElementById('urls-bot-filter').value;
+        const matcher = createUrlMatcher(search);
 
         pagination.urls.filtered = pagination.urls.data.filter(row => {
-            // Search filter
-            if (search && !row.url.toLowerCase().includes(search)) return false;
+            // Search filter (supports regex: /pattern/ or /pattern/i)
+            if (!matchUrl(row.url, matcher)) return false;
 
             // Status code filter
             if (statusFilter) {
